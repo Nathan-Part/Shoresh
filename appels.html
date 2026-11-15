@@ -146,10 +146,10 @@ main{padding-block:14px 150px;display:grid;gap:14px;align-content:start}
 .voile{position:absolute;inset:0;background:var(--veil);border:0}
 .panneau{position:relative;width:100%;max-width:var(--col);max-height:94%;overflow-y:auto;background:var(--bg);border-radius:20px 20px 0 0;box-shadow:var(--shadow);padding-block:16px calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px;align-content:start}
 .p-tete{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.p-tete h2{font-size:24px;overflow-wrap:anywhere;min-width:0}
+.p-tete h2{font-size:clamp(19px,5.6vw,24px);overflow-wrap:anywhere;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .fermer{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
 .numero{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.numero span{font-family:var(--font-display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all;letter-spacing:.01em}
+.numero span{font-family:var(--font-display);font-size:clamp(21px,6.4vw,26px);font-weight:700;font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all;letter-spacing:.01em}
 .actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .actions .btn{padding:0 8px;font-size:15px}
 .statuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -174,7 +174,8 @@ details>div{padding:0 14px 14px;display:grid;gap:12px}
 .ou{font-size:13px;font-weight:600;color:var(--muted);text-align:center}
 .check{display:flex;gap:10px;align-items:center;font-size:15px}
 .check input{width:20px;height:20px}
-.pied{position:sticky;bottom:0;z-index:1;background:var(--bg);border-top:1px solid var(--line);margin-inline:-4px;padding:10px 4px calc(10px + env(safe-area-inset-bottom,0px))}
+.pied{position:sticky;bottom:0;z-index:1;display:grid;grid-template-columns:1.6fr 1fr;gap:8px;background:var(--bg);border-top:1px solid var(--line);margin-inline:-4px;padding:10px 4px calc(10px + env(safe-area-inset-bottom,0px))}
+.pied .btn{padding:0 8px;min-width:0;text-align:center;line-height:1.15}
 .progress{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
 .progress i{display:block;height:100%;background:var(--brand);transition:width .2s}
 
@@ -516,7 +517,7 @@ function sauverPerso(patch) { S.perso = {...S.perso, ...patch}; LS.set(K_PERSO, 
 function apresChargement() {
   const r = S.aRestaurer;
   if (r && r.sheet && r.sheet.type === 'contact' && S.contacts.has(r.sheet.id)) {
-    S.sheet = r.sheet; S.brouillon = r.brouillon; S.suite = r.suite || [];
+    S.sheet = {...r.sheet, majVu: S.contacts.get(r.sheet.id).maj || 0, autre: null}; S.brouillon = r.brouillon; S.suite = r.suite || [];
     S.aRestaurer = null;
     renderSheet();
   }
@@ -524,7 +525,7 @@ function apresChargement() {
 
 /* ---------- Rendu ---------- */
 function render() {
-  renderTop(); renderTabs();
+  renderTop(); renderTabs(); verifierFiche();
   if (S.vueRendue !== S.vue) { S.vueRendue = S.vue; S.formSale = false; construireVue(); }
   else rafraichirVue();
 }
@@ -599,6 +600,7 @@ function tplAppels() {
 }
 function tplEtat() {
   const h = [];
+  if (S.horsLigne && S.mode === 'shared') h.push(`<div class="info alerte"><span>Tu es hors connexion. Les résultats notés maintenant ne seront pas enregistrés dans la liste partagée.</span></div>`);
   if (S.erreur) h.push(`<div class="info alerte"><span>La liste partagée ne répond plus. Tes dernières modifications n'ont peut-être pas été envoyées.</span><button type="button" class="btn small" data-a="reessayer">Réessayer</button></div>`);
   else if (S.lent) h.push(`<div class="info alerte"><span>${S.pret ? 'La liste partagée met du temps à répondre. Ce que tu vois date peut-être de ta dernière visite.' : "La liste partagée met du temps à répondre. Vérifie ta connexion."}</span></div>`);
   if (S.mode === 'local' && window.claude && !S.perso.noteVue) h.push(`<div class="info"><span>Ta liste est enregistrée sur cet appareil seulement. Pour voir la liste partagée de l'équipe, demande à être invité comme éditeur de cette page et ouvre-la en étant connecté.</span><button type="button" class="btn small" data-a="note-ok">Compris</button></div>`);
@@ -679,13 +681,16 @@ function renderSheet() {
   const corps = S.sheet.type === 'contact' ? tplContact() : S.sheet.type === 'ajout' ? tplAjout() : tplImport();
   if (corps === null) { fermerSheet(); return; }
   const haut = el.firstElementChild ? ($('.panneau', el) || {}).scrollTop : 0;
+  const actif = document.activeElement && el.contains(document.activeElement) ? document.activeElement : null;
+  const cleActif = actif && (actif.dataset.b ? `[data-b="${actif.dataset.b}"]` : actif.dataset.j ? `[data-j="${actif.dataset.j}"]` : '');
   el.innerHTML = `<button type="button" class="voile" data-a="fermer" aria-label="Fermer"></button><div class="panneau" role="dialog" aria-modal="true">${corps}</div>`;
   el.hidden = false;
   document.documentElement.style.overflow = 'hidden';
   if (haut) $('.panneau', el).scrollTop = haut;
+  if (cleActif) { const f = $(cleActif, el); if (f) { f.focus({preventScroll: true}); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} } }
 }
 function tplContact() {
-  const c = S.contacts.get(S.sheet.id), b = S.brouillon;
+  const sh = S.sheet, c = S.contacts.get(sh.id), b = S.brouillon;
   if (!c || !b) return null;
   const tel = String(c.tel || ''), wa = tel.replace(/\D/g, ''), msg = remplir(S.config.message, c);
   const actuel = ST[c.statut] || ST.a_appeler;
@@ -696,13 +701,12 @@ function tplContact() {
   if (b.statut === 'donne') champs.push(`<label class="champ"><span>Montant donné (€)</span><input type="number" inputmode="decimal" min="0" data-b="donne" value="${esc(b.donne)}" placeholder="Pour le total de la campagne"></label>`);
   return `<div class="p-tete"><h2>${esc(c.nom || 'Sans nom')}</h2><button type="button" class="fermer" data-a="fermer" aria-label="Fermer">${ICO.x}</button></div>
   <div class="numero"><span>${esc(fmtTel(tel))}</span><span class="pill ${actuel.cl}" style="font-family:var(--font-body);font-size:12.5px;letter-spacing:0">${esc(actuel.nom)}</span></div>
+  ${sh.autre ? `<div class="info alerte"><span>${esc(sh.autre.par || "Quelqu'un d'autre")} vient de modifier ce contact : ${esc(actuel.nom)}${actuel.id === 'donne' && c.donne ? ' · ' + esc(euro(c.donne)) : ''}. Si tu enregistres, ton résultat remplace le sien.</span></div>` : ''}
   <div class="actions">
     <a class="btn primary" href="tel:${esc(tel)}">Appeler</a>
     <a class="btn" href="https://wa.me/${esc(wa)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">WhatsApp</a>
     <a class="btn" href="sms:${esc(tel)}?&body=${encodeURIComponent(msg)}">SMS</a>
   </div>
-  <div class="row"><button type="button" class="btn small grow" data-a="copier-tel">Copier le numéro</button><button type="button" class="btn small grow" data-a="copier-msg">Copier le message</button></div>
-  <p class="aide">Si l'appel ou le SMS ne se lance pas depuis cette page, copie le numéro et colle-le dans ton téléphone.</p>
   ${S.config.script ? `<details ${b.scriptOuvert ? 'open' : ''} data-d="scriptOuvert"><summary>Script d'appel</summary><div><p class="script">${esc(remplir(S.config.script, c))}</p></div></details>` : ''}
   <h3 class="sec">Résultat de l'appel</h3>
   <div class="statuts">${STATUTS.slice(1).map(s => `<button type="button" class="st ${s.cl}" data-a="statut" data-s="${s.id}" aria-pressed="${b.statut === s.id}">${esc(s.nom)}</button>`).join('')}</div>
@@ -710,6 +714,8 @@ function tplContact() {
   <label class="champ"><span>Note</span><textarea data-b="note" rows="2" placeholder="Ce qu'il faut retenir de l'appel">${esc(b.note)}</textarea></label>
   ${S.perso.prenom ? '' : `<label class="champ"><span>Ton prénom, pour que l'équipe sache qui a appelé</span><input type="text" data-b="moi" value="${esc(b.moi || '')}" autocomplete="given-name"></label>`}
   <div class="row pied"><button type="button" class="btn primary grow" data-a="enregistrer-suivant">Enregistrer et suivant</button><button type="button" class="btn grow" data-a="enregistrer">Enregistrer</button></div>
+  <div class="row"><button type="button" class="btn small grow" data-a="copier-tel">Copier le numéro</button><button type="button" class="btn small grow" data-a="copier-msg">Copier le message</button></div>
+  <p class="aide">Si l'appel ou le SMS ne se lance pas depuis cette page, copie le numéro et colle-le dans ton téléphone.</p>
   <details ${b.editOuvert ? 'open' : ''} data-d="editOuvert"><summary>Modifier ou supprimer</summary><div>
     <label class="champ"><span>Nom</span><input type="text" data-b="nom" value="${esc(b.nom)}"></label>
     <label class="champ"><span>Téléphone</span><input type="tel" inputmode="tel" data-b="tel" value="${esc(b.tel)}"></label>
@@ -744,10 +750,11 @@ function tplImport() {
   const total = r.ajouts.length + r.majs.length;
   return tete + (an.fichier ? `
     <label class="champ"><span>Colonne des numéros</span>${opt('tel', false)}</label>
+    <label class="champ"><span>Autre colonne de numéros, utilisée si la première est vide</span>${opt('tel2', true)}</label>
     <label class="champ"><span>Colonne des noms</span>${opt('nom', true)}</label>
     <label class="champ"><span>Colonne des prénoms</span>${opt('prenom', true)}</label>
     <label class="champ"><span>Colonne des notes</span>${opt('note', true)}</label>
-    <label class="check"><input type="checkbox" id="i-entetes" ${an.entetes ? 'checked' : ''}>La première ligne contient les titres</label>` : '') + `
+    <label class="check"><input type="checkbox" id="i-entetes" ${an.entetes ? 'checked' : ''}>Le fichier contient une ligne de titres</label>` : '') + `
     <p class="obj-s">${resume.map(x => `<span>${x}</span>`).join('')}</p>
     ${r.ajouts.length ? `<div class="scroll-x"><table class="apercu"><thead><tr><th>Nom</th><th>Téléphone</th></tr></thead><tbody>${r.ajouts.slice(0, 5).map(a => `<tr><td>${esc(a.data.nom)}</td><td>${esc(fmtTel(a.data.tel))}</td></tr>`).join('')}</tbody></table></div>${r.ajouts.length > 5 ? `<p class="aide">et ${r.ajouts.length - 5} autres.</p>` : ''}` : ''}
     ${m.cours ? `<div class="progress"><i style="width:${m.total ? Math.round(m.fait / m.total * 100) : 0}%"></i></div><p class="aide">Import en cours : ${m.fait} sur ${m.total}. Garde la page ouverte.</p>` : ''}
@@ -760,7 +767,7 @@ function ouvrir(id) {
   if (!c) return;
   S.brouillon = {statut: ST[c.statut] ? c.statut : 'a_appeler', promis: c.promis || '', donne: c.donne || '', rappel: c.rappel || '', note: c.note || '', nom: c.nom || '', tel: fmtTel(c.tel), touche: false};
   S.suite = (S.vue === 'rappels' ? tous().filter(x => x.statut === 'rappeler') : listeFiltree()).map(x => x.id);
-  ouvrirSheet({type: 'contact', id});
+  ouvrirSheet({type: 'contact', id, majVu: c.maj || 0});
   const p = $('#sheet .panneau'); if (p) p.scrollTop = 0;
 }
 function suivantDe(id) {
@@ -773,16 +780,31 @@ function suivantDe(id) {
   return null;
 }
 function enregistrer(suivant) {
-  const id = S.sheet.id, c = S.contacts.get(id), b = S.brouillon;
+  const sh = S.sheet, id = sh.id, c = S.contacts.get(id), b = S.brouillon;
   if (!c) { fermerSheet(); return; }
+  if (S.mode === 'shared' && S.horsLigne) { toast('Pas de connexion : le résultat ne peut pas être enregistré pour le moment.'); return; }
+  if (sh.autre && !sh.autreOk) {
+    sh.autreOk = true; renderSheet();
+    const pn = $('#sheet .panneau'); if (pn) pn.scrollTop = 0;
+    toast("Ce contact vient d'être modifié par quelqu'un d'autre. Vérifie, puis enregistre à nouveau pour confirmer.");
+    return;
+  }
+  if (b.statut === 'donne' && !num(b.donne) && !b.sansMontantOk) {
+    b.sansMontantOk = true;
+    toast('Indique le montant donné pour qu\'il compte dans le total. Enregistre à nouveau pour le laisser vide.');
+    const f = $('#sheet [data-b="donne"]'); if (f) f.focus();
+    return;
+  }
   if (b.moi && b.moi.trim()) sauverPerso({prenom: b.moi.trim()});
-  const patch = {
+  const avant = {statut: ST[c.statut] ? c.statut : 'a_appeler', note: c.note || '', promis: +c.promis || 0, donne: +c.donne || 0, rappel: c.rappel || ''};
+  const cible = {
     statut: b.statut, note: String(b.note || '').trim(),
-    promis: b.statut === 'promesse' ? num(b.promis) : b.statut === 'donne' ? (+c.promis || 0) : 0,
+    promis: b.statut === 'promesse' ? num(b.promis) : b.statut === 'donne' ? avant.promis : 0,
     donne: b.statut === 'donne' ? num(b.donne) : 0,
     rappel: b.statut === 'rappeler' ? (b.rappel || '') : '',
-    maj: Date.now(), par: S.perso.prenom || '',
   };
+  const patch = {};
+  for (const k in cible) if (cible[k] !== avant[k]) patch[k] = cible[k];
   if (b.touche && b.statut === 'sans_reponse') patch.tentatives = (+c.tentatives || 0) + 1;
   const nom = String(b.nom || '').trim();
   if (nom && nom !== c.nom) patch.nom = nom;
@@ -791,10 +813,24 @@ function enregistrer(suivant) {
     if (!telValide(t)) { toast('Ce numéro ne semble pas valide.'); return; }
     patch.tel = t;
   }
+  const change = Object.keys(patch).length > 0;
+  if (change) { patch.maj = Date.now(); patch.par = S.perso.prenom || ''; }
   const next = suivant ? suivantDe(id) : null;
-  store.sauver(id, patch);
-  if (next) { ouvrir(next); toast('Enregistré. Contact suivant.'); }
-  else { fermerSheet(); toast(suivant ? 'Enregistré. Plus personne à appeler dans cette liste.' : 'Enregistré'); }
+  if (next) ouvrir(next); else fermerSheet();
+  if (change) store.sauver(id, patch);
+  toast(next ? (change ? 'Enregistré. Contact suivant.' : 'Contact suivant.') : suivant ? (change ? 'Enregistré. Plus personne à appeler dans cette liste.' : 'Plus personne à appeler dans cette liste.') : change ? 'Enregistré' : 'Aucun changement');
+}
+/* Quelqu'un d'autre modifie le contact ouvert : prévenir avant d'écraser son résultat */
+function verifierFiche() {
+  const sh = S.sheet;
+  if (!sh || sh.type !== 'contact') return;
+  const c = S.contacts.get(sh.id);
+  if (!c) { fermerSheet(); toast("Ce contact vient d'être supprimé par quelqu'un d'autre."); return; }
+  if ((c.maj || 0) === sh.majVu) return;
+  sh.majVu = c.maj || 0; sh.autre = {par: c.par || ''}; sh.autreOk = false;
+  const b = S.brouillon;
+  if (b && !b.touche) Object.assign(b, {statut: ST[c.statut] ? c.statut : 'a_appeler', promis: c.promis || '', donne: c.donne || '', rappel: c.rappel || '', note: c.note || ''});
+  renderSheet();
 }
 
 /* ---------- Import ---------- */
@@ -832,43 +868,56 @@ function texteVersLignes(txt) {
   });
 }
 const RX = {
-  tel: /t[ée]l|phone|mobile|portable|num[ée]ro|gsm/, prenom: /pr[ée]nom|first/, nom: /nom|name|contact/, note: /note|comment|remarque/,
+  tel: /t[ée]l|phone|mobile|portable|num[ée]ro|gsm|cell/, tel2: /fixe|domicile|bureau|travail/, prenom: /pr[ée]nom|first/, nom: /nom|name|contact/, note: /note|comment|remarque/,
   statut: /statut|status|[ée]tat/, promis: /promis|promesse/, donne: /donn[ée]/, rappel: /rappel/, par: /appelant/, maj: /mis [àa] jour/, tentatives: /tentative/,
 };
 function analyser(rows, fichier) {
   rows = rows.map(r => r.map(x => String(x ?? '').trim())).filter(r => r.some(x => x !== ''));
   if (!rows.length) return null;
   const n = Math.max(...rows.map(r => r.length));
-  const l1 = rows[0].map(x => x.toLowerCase());
-  const ressembleTel = x => { const d = x.replace(/\D/g, ''); return d.length >= 8 && d.length <= 15 && d.length >= x.replace(/\s/g, '').length * 0.7; };
-  const entetes = fichier && !l1.some(ressembleTel) && l1.some(h => RX.tel.test(h) || RX.nom.test(h));
-  const cols = {tel: -1, nom: -1, prenom: -1, note: -1, statut: -1, promis: -1, donne: -1, rappel: -1, par: -1, maj: -1, tentatives: -1};
-  if (entetes) {
-    l1.forEach((h, i) => {
-      if (!h) return;
-      for (const k of ['tel', 'prenom', 'statut', 'promis', 'donne', 'rappel', 'par', 'maj', 'tentatives', 'note', 'nom']) {
-        if (RX[k].test(h)) { if (cols[k] < 0) cols[k] = i; break; }
-      }
+  const ressembleTel = x => { const d = x.replace(/\D/g, ''); return d.length >= 8 && d.length <= 15 && d.length >= x.replace(/\s/g, '').length * 0.7 && !/^\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{2,4}$/.test(x); };
+  const CLES = ['prenom', 'statut', 'promis', 'donne', 'rappel', 'par', 'maj', 'tentatives', 'note', 'nom'];
+  /* La ligne de titres n'est pas toujours la première : on la cherche dans les 10 premières lignes */
+  let debut = 0, entetes = false;
+  if (fichier) {
+    let best = 0;
+    rows.slice(0, 10).forEach((r, i) => {
+      if (r.some(ressembleTel) || (n > 1 && r.filter(Boolean).length < 2)) return;
+      const l = r.map(x => x.toLowerCase());
+      if (!l.some(h => RX.tel.test(h) || RX.tel2.test(h) || RX.nom.test(h) || RX.prenom.test(h))) return;
+      const score = l.filter(h => h && (RX.tel.test(h) || RX.tel2.test(h) || CLES.some(k => RX[k].test(h)))).length;
+      if (score > best) { best = score; debut = i + 1; entetes = true; }
     });
   }
-  const corps = rows.slice(entetes ? 1 : 0);
-  if (cols.tel < 0) {
-    let best = -1, score = 0;
-    for (let i = 0; i < n; i++) { const s = corps.filter(r => ressembleTel(r[i] || '')).length; if (s > score) { score = s; best = i; } }
-    cols.tel = best < 0 ? 0 : best;
+  const cols = {tel: -1, tel2: -1, nom: -1, prenom: -1, note: -1, statut: -1, promis: -1, donne: -1, rappel: -1, par: -1, maj: -1, tentatives: -1};
+  if (entetes) {
+    const l1 = rows[debut - 1].map(x => x.toLowerCase());
+    const tels = l1.map((h, i) => h && (RX.tel.test(h) || RX.tel2.test(h)) ? i : -1).filter(i => i >= 0);
+    const mobile = tels.find(i => /portable|mobile|gsm|cell/.test(l1[i]));
+    cols.tel = mobile !== undefined ? mobile : tels.find(i => RX.tel.test(l1[i])) ?? (tels.length ? tels[0] : -1);
+    cols.tel2 = tels.find(i => i !== cols.tel) ?? -1;
+    l1.forEach((h, i) => {
+      if (!h || tels.includes(i)) return;
+      for (const k of CLES) if (RX[k].test(h)) { if (cols[k] < 0) cols[k] = i; break; }
+    });
   }
+  const corps = rows.slice(debut);
+  const compte = Array.from({length: n}, (_, i) => corps.filter(r => ressembleTel(r[i] || '')).length);
+  const meilleur = sauf => { let b = -1, sc = 0; compte.forEach((v, i) => { if (i !== sauf && v > sc) { sc = v; b = i; } }); return b; };
+  if (cols.tel < 0) { const b = meilleur(-1); cols.tel = b < 0 ? 0 : b; }
+  if (cols.tel2 < 0) cols.tel2 = meilleur(cols.tel);
   if (cols.nom < 0 && cols.prenom < 0) {
     for (let i = 0; i < n; i++) {
-      if (i === cols.tel || Object.values(cols).includes(i)) continue;
+      if (Object.values(cols).includes(i)) continue;
       if (corps.some(r => /[a-zA-Z\u00C0-\u024F\u0590-\u05FF]/.test(r[i] || ''))) { cols.nom = i; break; }
     }
   }
   const titres = Array.from({length: n}, (_, i) => {
     const lettre = String.fromCharCode(65 + (i % 26));
-    const ex = entetes ? rows[0][i] : (corps.find(r => r[i]) || [])[i];
+    const ex = entetes ? rows[debut - 1][i] : (corps.find(r => r[i]) || [])[i];
     return 'Colonne ' + lettre + (ex ? ' : ' + String(ex).slice(0, 24) : '');
   });
-  return {rows, entetes, cols, titres, fichier};
+  return {rows, entetes, debut, cols, titres, fichier};
 }
 function construire(an) {
   const ind = S.perso.indicatif, parTel = new Map();
@@ -876,8 +925,9 @@ function construire(an) {
   const vus = new Set(), ajouts = [], majs = [];
   let doublons = 0, sansTel = 0, ordre = maxOrdre() + 1;
   const col = (r, k) => an.cols[k] >= 0 ? String(r[an.cols[k]] ?? '').trim() : '';
-  for (const r of an.rows.slice(an.entetes ? 1 : 0)) {
-    const tel = normTel(col(r, 'tel'), ind);
+  for (const r of an.rows.slice(an.entetes ? an.debut : 0)) {
+    let tel = normTel(col(r, 'tel'), ind);
+    if (!telValide(tel)) tel = normTel(col(r, 'tel2'), ind);
     if (!telValide(tel)) { sansTel++; continue; }
     if (vus.has(tel)) { doublons++; continue; }
     vus.add(tel);
@@ -1061,6 +1111,8 @@ document.addEventListener('toggle', e => {
 }, true);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.sheet && !S.sheet.cours) fermerSheet(); });
 window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (VUES.includes(v) && v !== S.vue) allerVue(v); });
+window.addEventListener('offline', () => { S.horsLigne = true; render(); });
+window.addEventListener('online', () => { S.horsLigne = false; render(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !S.sheet) render(); });
 
 /* ---------- Démarrage ---------- */
@@ -1079,6 +1131,7 @@ async function connecter() {
 }
 function start(data) {
   S.perso = {...S.perso, ...LS.get(K_PERSO, {})};
+  S.horsLigne = navigator.onLine === false;
   const h = location.hash.slice(1);
   if (VUES.includes(h)) S.vue = h;
   if (data && typeof data === 'object') {
