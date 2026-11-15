@@ -550,8 +550,9 @@ function creerApiSheet(url, code) {
     try { j = await r.json(); } catch (e) { throw {code: 'unavailable', message: 'réponse illisible'}; }
     if (!j || !j.ok) {
       const m = j && j.erreur;
-      throw {code: m === 'code' ? 'code' : m === 'code_non_configure' ? 'code_non_configure' : m === 'occupe' ? 'unavailable' : 'invalid_argument', message: m || 'erreur'};
+      throw {code: m === 'code' ? 'code' : m === 'code_court' ? 'code_court' : m === 'code_non_configure' ? 'code_non_configure' : m === 'occupe' ? 'unavailable' : 'invalid_argument', message: m || 'erreur'};
     }
+    if (j.nouveauCode) setTimeout(() => toast(`Code d'équipe créé : « ${code} ». Donne-le aux appelants avec le lien du site.`), 300);
     return j;
   }
   function planifier(ms) {
@@ -575,7 +576,7 @@ function creerApiSheet(url, code) {
       }
     } catch (e) {
       lecture = false;
-      if (e.code === 'code' || e.code === 'code_non_configure') { erreur(e); return; }
+      if (e.code === 'code' || e.code === 'code_court' || e.code === 'code_non_configure') { erreur(e); return; }
       if (++echecs >= 3) { erreur({code: 'unavailable', message: 'réseau'}); return; }
       planifier(4000); return;
     }
@@ -647,7 +648,7 @@ function demarrerPartage() {
   minuteur = setTimeout(() => { S.lent = true; render(); }, 10000);
   const fin = code => {
     clearTimeout(minuteur); S.lent = false;
-    if (code === 'code' || code === 'code_non_configure') { demanderCode(code === 'code' ? "Ce code d'équipe n'est pas le bon." : "Le code d'équipe n'est pas encore réglé dans le script Google. Le responsable de la liste doit le remplacer, puis redéployer le script."); return; }
+    if (code === 'code' || code === 'code_court' || code === 'code_non_configure') { demanderCode(code === 'code' ? "Ce code d'équipe n'est pas le bon." : code === 'code_court' ? "Choisis un code d'au moins 4 caractères." : "Le code d'équipe n'est pas encore réglé dans le script Google."); return; }
     S.erreur = code || 'unavailable'; render();
   };
   desabos.push(db.collection('contacts').onSnapshot(snap => {
@@ -849,8 +850,8 @@ function tplLigne(c, entete) {
 }
 function tplCode() {
   return `<section class="bloc"><h2>Code d'équipe</h2>
-    <p class="aide">La liste d'appels est réservée à l'équipe. Entre le code que le responsable de la campagne t'a donné.</p>
-    <form id="f-code" class="row" autocomplete="off"><label class="champ grow"><span class="sr">Code d'équipe</span><input id="code" type="password" autocomplete="current-password" required></label><button type="submit" class="btn primary">Entrer</button></form>
+    <p class="aide">La liste d'appels est réservée à l'équipe. Entre le code que le responsable de la campagne t'a donné. À la toute première connexion, le code entré devient celui de l'équipe.</p>
+    <form id="f-code" class="row" autocomplete="off"><label class="champ grow"><span class="sr">Code d'équipe</span><input id="code" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" required></label><button type="submit" class="btn primary">Entrer</button></form>
     ${S.codeErreur ? `<div class="info alerte"><span>${esc(S.codeErreur)}</span></div>` : ''}
   </section>`;
 }

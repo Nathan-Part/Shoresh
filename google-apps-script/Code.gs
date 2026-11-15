@@ -1,18 +1,17 @@
 /**
- * Appels Shoresh 2026 : stockage de la liste commune dans ce Google Sheet.
+ * Appels Shoresh 2026 : stockage de la liste commune dans un Google Sheet.
  *
- * Installation (une seule fois) :
- *   1. Remplace « a-changer » ci-dessous par le code d'équipe que tu donneras aux appelants.
- *   2. Enregistre, puis Déployer > Nouveau déploiement > Application Web.
- *      Exécuter en tant que : Moi. Qui a accès : Tout le monde.
- *   3. Copie l'URL de l'application Web (elle finit par /exec).
+ * Installation (une seule fois) : colle ce code tel quel, enregistre, puis
+ * Déployer > Nouveau déploiement > Application Web. Exécuter en tant que : Moi. Qui a accès : Tout le monde.
+ * Copie l'URL de l'application Web (elle finit par /exec).
  *
- * Après une modification de ce script : Déployer > Gérer les déploiements > Modifier >
- * Version : Nouvelle version. L'URL reste la même.
+ * Code d'équipe : le premier code entré sur le site devient le code de l'équipe.
+ * Pour le changer : Paramètres du projet (roue dentée) > Propriétés du script > modifier « code ».
  *
- * Ne modifie pas les lignes de la feuille « Contacts » à la main : le site lit la colonne « data ».
+ * Le tableur « Appels Shoresh 2026 (liste) » est créé dans ton Google Drive au premier usage.
+ * Ne modifie pas ses lignes à la main : le site lit la colonne « data ».
  */
-const CODE_EQUIPE = 'a-changer';
+const CODE_EQUIPE = '';   // facultatif : un code fixé ici remplace celui choisi sur le site
 
 const ENTETES = ['Nom', 'Téléphone', 'Résultat', 'Promis (€)', 'Donné (€)', 'Moyen', 'Attribué à', 'Appelé par', 'Mis à jour', 'Note', 'id', 'data'];
 const COL_ID = 10, COL_DATA = 11;
@@ -28,7 +27,7 @@ function doGet(e) {
   if (refus) return json(refus);
   const rev = revActuelle();
   if (p.rev && p.rev === rev) return json({ok: true, rev: rev, inchange: true});
-  return json({ok: true, rev: rev, contacts: lireContacts(), config: lireConfig()});
+  return json({ok: true, rev: rev, contacts: lireContacts(), config: lireConfig(), nouveauCode: codeCree});
 }
 
 /* Écriture : un lot d'opérations { op: set | update | delete | config, id, data } */
@@ -78,10 +77,32 @@ function doPost(e) {
   }
 }
 
+let codeCree = false;
 function verifier(code) {
-  if (!CODE_EQUIPE || CODE_EQUIPE === 'a-changer') return {ok: false, erreur: 'code_non_configure'};
-  if (String(code || '') !== CODE_EQUIPE) return {ok: false, erreur: 'code'};
-  return null;
+  code = String(code || '').trim();
+  const props = PropertiesService.getScriptProperties();
+  const attendu = (CODE_EQUIPE && CODE_EQUIPE !== 'a-changer') ? CODE_EQUIPE : (props.getProperty('code') || '');
+  if (attendu) return code === attendu ? null : {ok: false, erreur: 'code'};
+  /* Aucun code encore : le premier code reçu devient celui de l'équipe, et le tableur est créé */
+  if (code.length < 4) return {ok: false, erreur: 'code_court'};
+  const verrou = LockService.getScriptLock();
+  if (!verrou.tryLock(10000)) return {ok: false, erreur: 'occupe'};
+  try {
+    if (!props.getProperty('code')) { props.setProperty('code', code); codeCree = true; classeur(); }
+    return props.getProperty('code') === code ? null : {ok: false, erreur: 'code'};
+  } finally {
+    verrou.releaseLock();
+  }
+}
+/* Le tableur auquel le script est rattaché, sinon celui qu'il a créé dans le Drive */
+function classeur() {
+  const actif = SpreadsheetApp.getActiveSpreadsheet();
+  if (actif) return actif;
+  const props = PropertiesService.getScriptProperties(), id = props.getProperty('classeur');
+  if (id) return SpreadsheetApp.openById(id);
+  const ss = SpreadsheetApp.create('Appels Shoresh 2026 (liste)');
+  props.setProperty('classeur', ss.getId());
+  return ss;
 }
 function json(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
@@ -96,7 +117,7 @@ function nouvelleRev() {
 }
 
 function feuille() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = classeur();
   const sh = ss.getSheetByName('Contacts') || ss.insertSheet('Contacts');
   if (sh.getLastRow() === 0) {
     sh.getRange(1, 1, 1, ENTETES.length).setValues([ENTETES]);
@@ -131,12 +152,12 @@ function ecrireContacts(contacts) {
   }
 }
 function lireConfig() {
-  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
+  const sh = classeur().getSheetByName('Config');
   if (!sh) return null;
   try { return JSON.parse(sh.getRange(1, 1).getValue()); } catch (err) { return null; }
 }
 function ecrireConfig(config) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = classeur();
   const sh = ss.getSheetByName('Config') || ss.insertSheet('Config');
   const r = sh.getRange(1, 1);
   r.setNumberFormat('@');

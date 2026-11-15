@@ -8,17 +8,18 @@ Outil d'appels pour la campagne de dons Shoresh 2026 : liste de contacts commune
 
 ## Installation
 
-### 1. Le Google Sheet
+### 1. Le script Google
 
-1. Crée un Google Sheet vide (par exemple sur sheets.new) et nomme-le « Appels Shoresh 2026 ».
-2. Menu **Extensions → Apps Script**. Efface le code présent et colle tout le contenu de `google-apps-script/Code.gs`.
-3. Ligne `const CODE_EQUIPE = 'a-changer';` : remplace `a-changer` par le code que tu donneras aux appelants. Choisis-en un difficile à deviner.
-4. Enregistre (icône disquette).
-5. **Déployer → Nouveau déploiement**. Roue dentée → **Application Web**.
+1. Ouvre **script.new** (connecté à ton compte Google). Sur téléphone, passe d'abord le navigateur en « version pour ordinateur ».
+2. Efface le code présent et colle tout le contenu de `google-apps-script/Code.gs`, sans rien modifier.
+3. Enregistre (icône disquette).
+4. **Déployer → Nouveau déploiement**. Roue dentée → **Application Web**.
    - Exécuter en tant que : **Moi**
    - Qui a accès : **Tout le monde**
-6. **Déployer**, puis **Autoriser l'accès** avec ton compte Google. Google affiche « Application non validée » : clique sur **Paramètres avancés**, puis **Accéder à … (non sécurisé)**. C'est ton propre script.
-7. Copie l'**URL de l'application Web**. Elle finit par `/exec`.
+5. **Déployer**, puis **Autoriser l'accès** avec ton compte Google. Google affiche « Application non validée » : clique sur **Paramètres avancés**, puis **Accéder à … (non sécurisé)**. C'est ton propre script.
+6. Copie l'**URL de l'application Web**. Elle finit par `/exec`.
+
+Le premier code d'équipe entré sur le site devient le code de l'équipe. Le tableur « Appels Shoresh 2026 (liste) » est créé dans ton Google Drive au même moment. Pour changer le code : dans le script, **Paramètres du projet → Propriétés du script → code**.
 
 Si tu modifies le script plus tard : **Déployer → Gérer les déploiements → Modifier (crayon) → Version : Nouvelle version**. L'URL ne change pas.
 
@@ -36,4 +37,4 @@ Mets l'URL du script dans la constante `API_URL` de `docs/index.html`. Pour test
 
 - Ne modifie pas la feuille « Contacts » à la main : le site lit la colonne `data`. Les autres colonnes servent à lire la liste dans Google Sheets.
 - Les autres téléphones voient les changements en 12 secondes au plus.
-- Personne ne voit un contact sans le code d'équipe. Pour changer le code, modifie-le dans le script, redéploie une nouvelle version, et donne le nouveau code à l'équipe.
+- Personne ne voit un contact sans le code d'équipe.
