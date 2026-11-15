@@ -459,7 +459,7 @@ function compteurs() {
   };
   for (const c of S.contacts.values()) {
     const s = statutDe(c);
-    if (Array.isArray(c.hist) && c.hist.length) { for (const h of c.hist) if (h) g(h.p).appels++; }
+    if (Array.isArray(c.hist) && c.hist.length) { for (const h of c.hist) if (h && h.s !== 'a_appeler') g(h.p).appels++; }
     else if (s !== 'a_appeler') g(c.par).appels++;
     if (s === 'promesse') { const x = g(c.par); x.promesses++; x.promis += +c.promis || 0; }
     if (s === 'donne') { const x = g(c.par); x.dons++; x.donne += +c.donne || 0; }
@@ -907,20 +907,21 @@ function tplContact() {
   ${S.config.script ? `<details ${b.scriptOuvert ? 'open' : ''} data-d="scriptOuvert"><summary>Script d'appel</summary><div><p class="script">${esc(remplir(S.config.script, c))}</p></div></details>` : ''}
   <h3 class="sec">Résultat de l'appel</h3>
   <div class="statuts">${STATUTS.slice(1).map(s => `<button type="button" class="st ${s.cl}" data-a="statut" data-s="${s.id}" aria-pressed="${b.statut === s.id}"><i></i>${esc(s.nom)}</button>`).join('')}</div>
+  ${statutDe(c) !== 'a_appeler' ? `<button type="button" class="btn small${b.retirer ? ' danger' : ''}" data-a="retirer-resultat">${b.retirer ? 'Confirmer : retirer le résultat et son montant' : "Retirer le résultat de l'appel"}</button>` : ''}
   ${champs.join('')}
   <label class="champ"><span>Note</span><textarea data-b="note" rows="2" placeholder="Ce qu'il faut retenir de l'appel">${esc(b.note)}</textarea></label>
   ${S.perso.prenom ? '' : noms.length
     ? `<label class="champ"><span>Qui es-tu ? Pour que l'équipe sache qui a appelé</span><select data-b="moi"><option value="">Choisir…</option>${noms.map(n => `<option value="${esc(n)}" ${n === b.moi ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`
     : `<label class="champ"><span>Ton prénom, pour que l'équipe sache qui a appelé</span><input type="text" data-b="moi" value="${esc(b.moi || '')}" autocomplete="given-name"></label>`}
   <div class="row pied"><button type="button" class="btn primary grow" data-a="enregistrer-suivant">Enregistrer et suivant</button><button type="button" class="btn grow" data-a="enregistrer">Enregistrer</button></div>
-  ${hist.length ? `<details ${b.histOuvert ? 'open' : ''} data-d="histOuvert"><summary>Historique · ${hist.length}</summary><div><ul class="hist">${hist.map(h => `<li><b>${esc((ST[h.s] || ST.a_appeler).nom)}${h.m ? ' · ' + esc(euro(h.m)) : ''}</b><span>${esc(h.p || 'Sans prénom')}, ${esc(quand(h.t))}</span></li>`).join('')}</ul></div></details>` : ''}
+  ${hist.length ? `<details ${b.histOuvert ? 'open' : ''} data-d="histOuvert"><summary>Historique · ${hist.length}</summary><div><ul class="hist">${hist.map(h => `<li><b>${esc(h.s === 'a_appeler' ? 'Résultat retiré' : (ST[h.s] || ST.a_appeler).nom)}${h.m ? ' · ' + esc(euro(h.m)) : ''}</b><span>${esc(h.p || 'Sans prénom')}, ${esc(quand(h.t))}</span></li>`).join('')}</ul></div></details>` : ''}
   <div class="row"><button type="button" class="btn small grow" data-a="copier-tel">Copier le numéro</button><button type="button" class="btn small grow" data-a="copier-msg">Copier le message</button></div>
   <p class="aide">Si l'appel ou le SMS ne se lance pas depuis cette page, copie le numéro et colle-le dans ton téléphone.</p>
   <details ${b.editOuvert ? 'open' : ''} data-d="editOuvert"><summary>Modifier ou supprimer</summary><div>
     <label class="champ"><span>Nom</span><input type="text" data-b="nom" value="${esc(b.nom)}"></label>
     <label class="champ"><span>Téléphone</span><input type="tel" inputmode="tel" data-b="tel" value="${esc(b.tel)}"></label>
     <label class="champ"><span>Don précédent (€)</span><input type="number" inputmode="decimal" min="0" data-b="ancien" value="${esc(b.ancien)}" placeholder="Montant donné l'an dernier"></label>
-    <div class="row"><button type="button" class="btn small grow" data-a="statut" data-s="a_appeler">Remettre « à appeler »</button>
+    <div class="row">
     ${b.supprimer ? `<button type="button" class="btn small danger grow" data-a="supprimer-ok">Confirmer la suppression</button>` : `<button type="button" class="btn small danger grow" data-a="supprimer">Supprimer ce contact</button>`}</div>
   </div></details>`;
 }
@@ -1241,6 +1242,21 @@ const ACTIONS = {
   vue: el => allerVue(el.dataset.v),
   filtre: el => { S.filtre = el.dataset.f; S.limite = 200; S.epingles.clear(); rafraichirAppels(); },
   detail: () => ouvrirSheet({type: 'detail'}),
+  /* Remet le contact comme s'il n'avait pas été appelé ; la note et l'historique sont gardés */
+  'retirer-resultat': () => {
+    const sh = S.sheet, c = S.contacts.get(sh.id), b = S.brouillon;
+    if (!c || !b) return;
+    if (S.mode === 'shared' && S.horsLigne) { toast('Pas de connexion : le résultat ne peut pas être retiré pour le moment.'); return; }
+    if ((+c.donne || +c.promis) && !b.retirer) { b.retirer = true; renderSheet(); return; }
+    const t = Date.now(), moi = S.perso.prenom || '';
+    const patch = {statut: 'a_appeler', promis: 0, donne: 0, rappel: '', moyen: '', lien: false, tentatives: 0, maj: t, par: moi,
+      hist: [...(Array.isArray(c.hist) ? c.hist : []), {t, p: moi, s: 'a_appeler', m: 0}].slice(-20)};
+    Object.assign(b, {statut: 'a_appeler', promis: '', donne: '', rappel: '', moyen: '', lien: false, touche: false, retirer: false, sansMontantOk: false});
+    sh.majVu = t; sh.autre = null;
+    S.epingles.add(sh.id);
+    store.sauver(sh.id, patch);
+    toast('Résultat retiré : le contact est de nouveau « à appeler »');
+  },
   moyen: el => { const b = S.brouillon; b.moyen = b.moyen === el.dataset.m ? '' : el.dataset.m; renderSheet(); },
   plus: () => { S.limite += 200; rafraichirAppels(); },
   mes: () => {
