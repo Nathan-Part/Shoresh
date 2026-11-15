@@ -129,6 +129,7 @@ main{padding-block:16px 150px;display:grid;gap:14px;align-content:start}
 .chip.mes[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
 
 /* Lignes de contact, groupées dans une carte */
+.liste-champs{display:grid;gap:12px}
 .liste{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-s)}
 .lig{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:3px 12px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 14px}
 .lig:last-child{border-bottom:0}
@@ -538,7 +539,7 @@ function creerApiSheet(url, code) {
   const meta = {fromCache: false, hasPendingWrites: false};
   const snapC = () => { const d = [...docs].map(([id, x]) => ({id, exists: true, data: () => x, metadata: meta})); return {docs: d, size: d.length, empty: !d.length, docChanges: () => [], metadata: meta}; };
   const snapK = () => ({id: 'main', exists: !!config, data: () => config || undefined, metadata: meta});
-  const diffuser = () => { subsC.forEach(s => s.next(snapC())); subsK.forEach(s => s.next(snapK())); };
+  const diffuser = () => { subsK.forEach(s => s.next(snapK())); subsC.forEach(s => s.next(snapC())); };
   const erreur = e => { const t = [...subsC, ...subsK]; subsC.clear(); subsK.clear(); arreter(); t.forEach(s => s.error && s.error(e)); };
   async function appel(post) {
     let r;
@@ -773,6 +774,18 @@ function render() {
     if (S.vueRendue !== 'code') { S.vueRendue = 'code'; $('#main').innerHTML = tplCode(); const f = $('#code'); if (f) f.focus(); }
     return;
   }
+  /* Personne ne peut rien noter sans s'être présenté : prénom et nom obligatoires */
+  if (S.pret && !S.perso.prenom) {
+    renderTop(); $('#tabs').innerHTML = '';
+    if (S.sheet) fermerSheet();
+    /* La liste de l'équipe peut arriver après l'écran : on le redessine tant que rien n'a été tapé */
+    const vierge = !($('#i-prenom') && ($('#i-prenom').value || $('#i-nom').value));
+    if (S.vueRendue !== 'identite' || (vierge && S.identiteN !== equipe().length)) {
+      S.vueRendue = 'identite'; S.identiteN = equipe().length;
+      $('#main').innerHTML = tplIdentite(); const f = $('#i-prenom'); if (f) f.focus();
+    }
+    return;
+  }
   renderTop(); renderTabs(); verifierFiche();
   if (S.vueRendue !== S.vue) { S.vueRendue = S.vue; S.formSale = false; construireVue(); }
   else rafraichirVue();
@@ -847,6 +860,31 @@ function tplLigne(c, entete) {
     <span class="pill ${s.cl}">${esc(pill)}</span>
     ${sub.length ? `<span class="lig-sub">${esc(sub.join(' · '))}</span>` : ''}
   </button>`;
+}
+function tplIdentite() {
+  const noms = equipe();
+  return `<section class="bloc"><h2>Qui es-tu ?</h2>
+    <p class="aide">Ton nom s'affiche à côté de chaque appel que tu notes, pour que l'équipe sache qui a appelé qui. Il est retenu sur ce téléphone.</p>
+    <form id="f-identite" class="liste-champs" autocomplete="on">
+      <label class="champ"><span>Prénom</span><input id="i-prenom" type="text" autocomplete="given-name" autocapitalize="words" required></label>
+      <label class="champ"><span>Nom</span><input id="i-nom" type="text" autocomplete="family-name" autocapitalize="words" required></label>
+      <button type="submit" class="btn primary">Commencer</button>
+    </form>
+  </section>
+  ${noms.length ? `<section class="bloc"><h2>Déjà dans l'équipe ?</h2>
+    <p class="aide">Si tu as déjà utilisé le site sur un autre téléphone, choisis ton nom.</p>
+    <label class="champ"><span class="sr">Ton nom</span><select id="i-existant"><option value="">Choisir ton nom…</option>${noms.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</select></label>
+    <button type="button" class="btn" data-a="identite-existant">C'est moi</button>
+  </section>` : ''}`;
+}
+const majuscule = t => String(t || '').trim().replace(/\s+/g, ' ').replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+function devenir(nom) {
+  const deja = equipe().find(n => plain(n) === plain(nom));
+  nom = deja || nom;
+  sauverPerso({prenom: nom});
+  inscrire(nom);
+  S.vueRendue = ''; render();
+  toast('Bienvenue ' + nom.split(' ')[0] + ' !');
 }
 function tplCode() {
   return `<section class="bloc"><h2>Code d'équipe</h2>
@@ -936,14 +974,14 @@ function tplEquipe() {
         <span>${x.appels} appel${x.appels > 1 ? 's' : ''} · ${x.dons} don${x.dons > 1 ? 's' : ''} · ${x.promesses} promesse${x.promesses > 1 ? 's' : ''}${x.restants ? ' · ' + x.restants + ' à appeler' : ''}</span>
         <div class="bar mini"><i class="b-donne" style="width:${x.donne / max * 100}%"></i><i class="b-promis" style="width:${x.promis / max * 100}%"></i></div></div>
       <div class="eq-m"><strong>${esc(euro(x.donne))}</strong>${x.promis ? `<span>+ ${esc(euro(x.promis))} promis</span>` : ''}</div>
-      <div class="eq-act">${estMoi ? '' : `<button type="button" class="btn small" data-a="eq-moi" data-n="${esc(x.nom)}">C'est moi</button>`}${
+      <div class="eq-act">${
         plain(S.eqRetirer) === plain(x.nom)
           ? `<button type="button" class="btn small danger" data-a="eq-retirer-ok">Confirmer le retrait</button><button type="button" class="btn small" data-a="eq-retirer-non">Annuler</button>`
           : `<button type="button" class="btn small" data-a="eq-retirer" data-n="${esc(x.nom)}">Retirer</button>`}</div>
     </div>`;
   };
   return `<section class="bloc"><h2>Équipe d'appel</h2>
-    <p class="aide">Ajoute ici chaque personne qui appelle. Sur son téléphone, chacun touche ensuite « C'est moi » à côté de son prénom.</p>
+    <p class="aide">Chaque appelant rejoint l'équipe en entrant son prénom et son nom à sa première visite. Tu peux aussi ajouter quelqu'un à l'avance, pour lui attribuer des contacts.</p>
     <div class="row"><label class="champ grow"><span class="sr">Prénom à ajouter</span><input id="e-nom" data-f type="text" autocomplete="off" placeholder="Prénom à ajouter"></label><button type="button" class="btn primary" data-a="eq-ajouter">Ajouter</button></div>
   </section>
   ${membres.length ? `<div class="liste">${membres.map(ligne).join('')}</div>` : `<div class="vide"><p>Personne dans l'équipe pour le moment. Ajoute un premier prénom ci-dessus.</p></div>`}
@@ -997,12 +1035,11 @@ function tplReglages() {
     ${partage ? '<p class="aide">Objectif et lien sont communs à toute l\'équipe.</p>' : ''}
   </section>
   <section class="bloc"><h2>Toi</h2>
-    <label class="champ"><span>Qui es-tu ? (affiché à côté de tes appels)</span><select id="p-prenom" data-f><option value="">Choisir…</option>${noms.map(n => `<option value="${esc(n)}" ${plain(n) === moi() ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>
-    <p class="aide">Tu n'es pas dans la liste ? Ajoute ton prénom dans l'onglet Équipe.</p>
+    <div class="row" style="align-items:center;justify-content:space-between"><p>Tu es <b>${esc(S.perso.prenom)}</b>.</p><button type="button" class="btn small" data-a="pas-moi">Ce n'est pas moi</button></div>
     <label class="champ"><span>Ton lien de don personnel, s'il est différent</span><input id="p-lien" data-f type="url" inputmode="url" value="${esc(S.perso.lien)}" placeholder="Laisse vide pour utiliser le lien de la campagne"></label>
     <label class="champ"><span>Indicatif des numéros sans +</span><select id="p-ind" data-f>${[['33', 'France (+33)'], ['972', 'Israël (+972)'], ['32', 'Belgique (+32)'], ['41', 'Suisse (+41)'], ['352', 'Luxembourg (+352)'], ['1', 'États-Unis, Canada (+1)'], ['44', 'Royaume-Uni (+44)']].map(([v, n]) => `<option value="${v}" ${S.perso.indicatif === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
     <button type="button" class="btn primary" data-a="sauver-perso">Enregistrer</button>
-    <p class="aide">Ces trois réglages restent sur cet appareil.</p>
+    <p class="aide">Ces réglages restent sur cet appareil.</p>
   </section>
   <section class="bloc"><h2>Liste de contacts</h2>
     <p class="aide">${st.total} contact${st.total > 1 ? 's' : ''}. ${partage ? (S.parSheet ? "La liste est partagée : chaque personne qui a le code d'équipe voit et modifie les mêmes contacts." : "La liste est partagée en direct : chaque personne invitée comme éditeur voit et modifie les mêmes contacts.") : "La liste est enregistrée sur cet appareil. Exporte-la pour la sauvegarder ou la transmettre."}</p>
@@ -1066,9 +1103,6 @@ function tplContact() {
   ${statutDe(c) !== 'a_appeler' && !b.retirer ? `<p class="aide">Touche à nouveau le résultat choisi pour l'annuler.</p>` : ''}
   ${champs.join('')}
   <label class="champ"><span>Note</span><textarea data-b="note" rows="2" placeholder="Ce qu'il faut retenir de l'appel">${esc(b.note)}</textarea></label>
-  ${S.perso.prenom ? '' : noms.length
-    ? `<label class="champ"><span>Qui es-tu ? Pour que l'équipe sache qui a appelé</span><select data-b="moi"><option value="">Choisir…</option>${noms.map(n => `<option value="${esc(n)}" ${n === b.moi ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`
-    : `<label class="champ"><span>Ton prénom, pour que l'équipe sache qui a appelé</span><input type="text" data-b="moi" value="${esc(b.moi || '')}" autocomplete="given-name"></label>`}
   <div class="row pied"><button type="button" class="btn primary grow" data-a="enregistrer-suivant">Enregistrer et suivant</button><button type="button" class="btn grow" data-a="enregistrer">Enregistrer</button></div>
   ${hist.length ? `<details ${b.histOuvert ? 'open' : ''} data-d="histOuvert"><summary>Historique · ${hist.length}</summary><div><ul class="hist">${hist.map(h => `<li><b>${esc(h.s === 'a_appeler' ? 'Résultat retiré' : (ST[h.s] || ST.a_appeler).nom)}${h.m ? ' · ' + esc(euro(h.m)) : ''}</b><span>${esc(h.p || 'Sans prénom')}, ${esc(quand(h.t))}</span></li>`).join('')}</ul></div></details>` : ''}
   <div class="row"><button type="button" class="btn small grow" data-a="copier-tel">Copier le numéro</button><button type="button" class="btn small grow" data-a="copier-msg">Copier le message</button></div>
@@ -1139,6 +1173,7 @@ function suivantDe(id) {
   return null;
 }
 function enregistrer(suivant) {
+  if (!S.perso.prenom) { render(); return; }
   const sh = S.sheet, id = sh.id, c = S.contacts.get(id), b = S.brouillon;
   if (!c) { fermerSheet(); return; }
   if (S.mode === 'shared' && S.horsLigne) { toast('Pas de connexion : le résultat ne peut pas être enregistré pour le moment.'); return; }
@@ -1154,7 +1189,6 @@ function enregistrer(suivant) {
     const f = $('#sheet [data-b="donne"]'); if (f) f.focus();
     return;
   }
-  if (b.moi && b.moi.trim()) { sauverPerso({prenom: b.moi.trim()}); inscrire(b.moi); }
   const avant = {statut: statutDe(c), note: c.note || '', promis: +c.promis || 0, donne: +c.donne || 0, rappel: c.rappel || '', moyen: c.moyen || '', lien: !!c.lien, ancien: +c.ancien || 0};
   const cible = {
     statut: b.statut, note: String(b.note || '').trim(),
@@ -1447,6 +1481,8 @@ const ACTIONS = {
     await inscrire(nom);
     render(); toast('Sur cet appareil, tu es ' + nom);
   },
+  'identite-existant': () => { const v = $('#i-existant') && $('#i-existant').value; if (!v) { toast('Choisis ton nom dans la liste.'); return; } devenir(v); },
+  'pas-moi': () => { sauverPerso({prenom: '', mes: false}); S.vueRendue = ''; render(); },
   'eq-retirer': el => { S.eqRetirer = el.dataset.n; S.formSale = false; construireVue(); },
   'eq-retirer-non': () => { S.eqRetirer = ''; construireVue(); },
   'eq-retirer-ok': async () => {
@@ -1521,8 +1557,7 @@ const ACTIONS = {
   },
   'sauver-perso': () => {
     S.formSale = false;
-    sauverPerso({prenom: $('#p-prenom').value.trim(), lien: $('#p-lien').value.trim(), indicatif: $('#p-ind').value});
-    inscrire(S.perso.prenom);
+    sauverPerso({lien: $('#p-lien').value.trim(), indicatif: $('#p-ind').value});
     render(); toast('Réglages enregistrés');
   },
   'sauver-script': async () => {
@@ -1545,10 +1580,18 @@ const ACTIONS = {
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el || el.disabled) return;
+  if (S.pret && !S.perso.prenom && S.mode !== 'code' && el.dataset.a !== 'identite-existant') { render(); return; }
   const f = ACTIONS[el.dataset.a];
   if (f) f(el);
 });
 document.addEventListener('submit', e => {
+  if (e.target.id === 'f-identite') {
+    e.preventDefault();
+    const prenom = majuscule($('#i-prenom').value), nom = majuscule($('#i-nom').value);
+    if (!prenom || !nom) { toast('Entre ton prénom et ton nom.'); return; }
+    devenir(prenom + ' ' + nom);
+    return;
+  }
   if (e.target.id !== 'f-code') return;
   e.preventDefault();
   const code = $('#code').value.trim();
