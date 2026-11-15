@@ -4,182 +4,229 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&display=swap">
 <style>
-/* Mise en page : colonne unique pensée pour le pouce. Bandeau d'objectif collant en haut,
-   liste d'appels au centre, onglets fixés en bas, fiche contact en panneau montant. */
+/* Mise en page : colonne unique pensée pour le pouce. Bandeau bleu nuit collant qui porte la jauge dorée
+   de l'objectif, liste d'appels en carte blanche, onglets fixés en bas, fiche contact en panneau montant. */
 :root{
-  --bg:#F2F5F3; --surface:#FFFFFF; --surface-2:#E6ECE8; --ink:#13231D; --muted:#5A6B64; --line:#D3DCD7;
-  --brand:#0E6B54; --brand-ink:#FFFFFF; --brand-soft:#D7EEE5;
-  --amber:#8A5800; --amber-soft:#FAE9C3;
-  --blue:#1B5A9F; --blue-soft:#DBE8F8;
-  --violet:#65399A; --violet-soft:#E9DEF6;
-  --red:#A12E27; --red-soft:#F8DDDA;
-  --grey:#55625C; --grey-soft:#E2E8E4;
-  --veil:rgba(19,35,29,.45);
-  --shadow:0 10px 30px rgba(19,35,29,.16);
+  --bg:#F3F4FA; --surface:#FFFFFF; --surface-2:#E8EBF6; --ink:#141A33; --muted:#5B6385; --line:#DCE0EE;
+  --brand:#2B4EE6; --brand-ink:#FFFFFF; --brand-soft:#E0E6FE;
+  --hero-a:#121A46; --hero-b:#2A3BA6; --hero-ink:#FFFFFF; --hero-muted:#C3CAF2; --hero-track:rgba(255,255,255,.16); --hero-chip:rgba(255,255,255,.13);
+  --gold:#F2B33A; --gold-on:#3A2600; --gold-text:#855600; --gold-soft:#FCEEC8;
+  --slate:#454E73; --slate-soft:#E4E7F4;
+  --cyan:#0A6C88; --cyan-soft:#D5F0F8;
+  --violet:#6A3FB5; --violet-soft:#ECE3FB; --lilac:#BBA8F6;
+  --red:#B4233C; --red-soft:#FCE1E6;
+  --grey:#666C82; --grey-soft:#ECEEF3;
+  --veil:rgba(13,18,48,.5);
+  --shadow:0 12px 32px rgba(20,26,51,.18);
+  --shadow-s:0 1px 2px rgba(20,26,51,.06);
   --font-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
   --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   --col:560px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0D1412; --surface:#16201C; --surface-2:#202C27; --ink:#E7F0EB; --muted:#9AAFA5; --line:#2C3B35;
-    --brand:#46C6A2; --brand-ink:#06231B; --brand-soft:#173A30;
-    --amber:#F0BC5E; --amber-soft:#3A2D10;
-    --blue:#7FB4F2; --blue-soft:#15293F;
-    --violet:#C3A1EE; --violet-soft:#2B2040;
-    --red:#F09088; --red-soft:#3F1C19;
-    --grey:#A9B6B0; --grey-soft:#26302C;
-    --veil:rgba(0,0,0,.6);
-    --shadow:0 10px 30px rgba(0,0,0,.5);
+    --bg:#0B0F22; --surface:#141A35; --surface-2:#1E2547; --ink:#E9ECFB; --muted:#9BA4CB; --line:#29305A;
+    --brand:#8198FF; --brand-ink:#0A1030; --brand-soft:#1D2A66;
+    --hero-a:#0E1540; --hero-b:#22318F; --hero-ink:#FFFFFF; --hero-muted:#B9C2EE; --hero-track:rgba(255,255,255,.16); --hero-chip:rgba(255,255,255,.13);
+    --gold:#F4BE55; --gold-on:#3A2600; --gold-text:#F4C76B; --gold-soft:#3B2E0E;
+    --slate:#B4BCE0; --slate-soft:#252C52;
+    --cyan:#6FD0EA; --cyan-soft:#0F3340;
+    --violet:#C6A8F5; --violet-soft:#2C2150; --lilac:#BBA8F6;
+    --red:#F4909F; --red-soft:#431A24;
+    --grey:#A3A9C0; --grey-soft:#22273D;
+    --veil:rgba(0,0,0,.62);
+    --shadow:0 12px 32px rgba(0,0,0,.55);
+    --shadow-s:0 1px 2px rgba(0,0,0,.3);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0D1412; --surface:#16201C; --surface-2:#202C27; --ink:#E7F0EB; --muted:#9AAFA5; --line:#2C3B35;
-  --brand:#46C6A2; --brand-ink:#06231B; --brand-soft:#173A30;
-  --amber:#F0BC5E; --amber-soft:#3A2D10;
-  --blue:#7FB4F2; --blue-soft:#15293F;
-  --violet:#C3A1EE; --violet-soft:#2B2040;
-  --red:#F09088; --red-soft:#3F1C19;
-  --grey:#A9B6B0; --grey-soft:#26302C;
-  --veil:rgba(0,0,0,.6);
-  --shadow:0 10px 30px rgba(0,0,0,.5);
+  --bg:#0B0F22; --surface:#141A35; --surface-2:#1E2547; --ink:#E9ECFB; --muted:#9BA4CB; --line:#29305A;
+  --brand:#8198FF; --brand-ink:#0A1030; --brand-soft:#1D2A66;
+  --hero-a:#0E1540; --hero-b:#22318F; --hero-ink:#FFFFFF; --hero-muted:#B9C2EE; --hero-track:rgba(255,255,255,.16); --hero-chip:rgba(255,255,255,.13);
+  --gold:#F4BE55; --gold-on:#3A2600; --gold-text:#F4C76B; --gold-soft:#3B2E0E;
+  --slate:#B4BCE0; --slate-soft:#252C52;
+  --cyan:#6FD0EA; --cyan-soft:#0F3340;
+  --violet:#C6A8F5; --violet-soft:#2C2150; --lilac:#BBA8F6;
+  --red:#F4909F; --red-soft:#431A24;
+  --grey:#A3A9C0; --grey-soft:#22273D;
+  --veil:rgba(0,0,0,.62);
+  --shadow:0 12px 32px rgba(0,0,0,.55);
+  --shadow-s:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--hero-a)}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .wrap{max-width:var(--col);margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
 p{margin:0}
+ul{margin:0;padding:0;list-style:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 
-/* Bandeau d'objectif */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.top-in{padding-block:12px 12px;display:grid;gap:8px}
-.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.top h1{font-size:19px;font-weight:700}
-.mode{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
-.mode i{width:8px;height:8px;border-radius:50%;background:var(--grey)}
-.mode.live i{background:var(--brand)}
-.obj-n{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
-.obj-n strong{font-family:var(--font-display);font-size:30px;font-weight:800;line-height:1;letter-spacing:-.02em}
-.obj-n span{color:var(--muted);font-size:14px}
-.bar{display:flex;height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden}
-.bar i{display:block;height:100%;transition:width .3s}
-.bar .b-donne{background:var(--brand)}
-.bar .b-promis{background:repeating-linear-gradient(135deg,var(--violet) 0 5px,var(--violet-soft) 5px 9px)}
-.obj-s{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.obj-s b{color:var(--ink);font-weight:600}
-.lien-btn{background:none;border:0;padding:0;color:var(--brand);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+/* Couleur de chaque résultat d'appel : --c pour le texte, --cs pour le fond */
+.s-neutre{--c:var(--muted);--cs:var(--surface-2)}
+.s-ardoise{--c:var(--slate);--cs:var(--slate-soft)}
+.s-cyan{--c:var(--cyan);--cs:var(--cyan-soft)}
+.s-violet{--c:var(--violet);--cs:var(--violet-soft)}
+.s-or{--c:var(--gold-text);--cs:var(--gold-soft)}
+.s-rouge{--c:var(--red);--cs:var(--red-soft)}
+.s-gris{--c:var(--grey);--cs:var(--grey-soft)}
 
-main{padding-block:14px 150px;display:grid;gap:14px;align-content:start}
+/* Bandeau d'objectif */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:0 0 22px 22px;box-shadow:var(--shadow)}
+.top-in{padding-block:12px 14px;display:grid;gap:8px}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top h1{font-size:18px;font-weight:700}
+.mode{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--hero-chip);font-size:12px;font-weight:600;color:var(--hero-ink);white-space:nowrap}
+.mode i{width:8px;height:8px;border-radius:50%;background:var(--hero-muted)}
+.mode.live i{background:var(--gold)}
+.obj-n{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.obj-n strong{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.obj-n span{color:var(--hero-muted);font-size:14px}
+.obj-n .pct{margin-left:auto;color:var(--gold);font-weight:700;font-size:15px}
+.bar{display:flex;height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.top .bar{background:var(--hero-track)}
+.bar i{display:block;height:100%;transition:width .3s}
+.bar .b-donne{background:var(--gold)}
+.bar .b-promis{background:repeating-linear-gradient(135deg,var(--lilac) 0 5px,transparent 5px 9px)}
+.bar.mini{height:6px;border-radius:3px}
+.obj-s{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px;color:var(--hero-muted);font-variant-numeric:tabular-nums}
+.obj-s b{color:var(--hero-ink);font-weight:600}
+.lien-btn{background:none;border:0;padding:0;color:var(--gold);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.resume{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.resume b{color:var(--ink)}
+
+main{padding-block:16px 150px;display:grid;gap:14px;align-content:start}
 
 /* Recherche et filtres */
-.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 14px;box-shadow:var(--shadow-s)}
 .search svg{flex:none;color:var(--muted)}
-.search input{flex:1;min-width:0;border:0;background:none;padding:12px 0;outline:none}
+.search input{flex:1;min-width:0;border:0;background:none;padding:13px 0;outline:none}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap}
-.chip b{font-weight:600;opacity:.7;margin-left:4px;font-variant-numeric:tabular-nums}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap}
+.chip b{font-weight:600;opacity:.7;margin-left:5px;font-variant-numeric:tabular-nums}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip.mes{border-color:var(--brand);color:var(--brand)}
+.chip.mes[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
 
-/* Lignes de contact */
-.liste{border-top:1px solid var(--line)}
-.lig{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 0}
+/* Lignes de contact, groupées dans une carte */
+.liste{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-s)}
+.lig{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:3px 12px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 14px}
+.lig:last-child{border-bottom:0}
+.lig:active{background:var(--surface-2)}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--cs);color:var(--c);font-family:var(--font-display);font-weight:700;font-size:14px;letter-spacing:.02em}
 .lig-id{display:grid;min-width:0}
 .lig-nom{font-weight:600;font-size:16px;overflow-wrap:anywhere}
 .lig-tel{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
-.lig-sub{grid-column:1/-1;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-.pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
-.s-neutre{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
-.s-ambre{background:var(--amber-soft);color:var(--amber)}
-.s-bleu{background:var(--blue-soft);color:var(--blue)}
-.s-violet{background:var(--violet-soft);color:var(--violet)}
-.s-vert{background:var(--brand-soft);color:var(--brand)}
-.s-rouge{background:var(--red-soft);color:var(--red)}
-.s-gris{background:var(--grey-soft);color:var(--grey)}
+.lig-sub{grid-column:2/-1;font-size:13px;color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;background:var(--cs);color:var(--c)}
+.pill.s-neutre{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
 .sec{font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 .sec.retard{color:var(--red)}
 
 /* États */
-.vide{display:grid;gap:12px;padding-block:22px}
+.vide{display:grid;gap:12px;padding:22px 18px;background:var(--surface);border:1px solid var(--line);border-radius:18px}
 .vide h2{font-size:22px}
 .vide p{color:var(--muted);max-width:44ch}
-.info{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;background:var(--blue-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px}
-.info.alerte{background:var(--amber-soft)}
+.info{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;background:var(--brand-soft);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:14px}
+.info.alerte{background:var(--gold-soft)}
 .info button{flex:none}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 
 /* Boutons et champs */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;text-decoration:none;color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:600;text-decoration:none;color:var(--ink);text-align:center}
 .btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.wa{background:var(--brand-soft);border-color:transparent;color:var(--brand)}
 .btn.danger{color:var(--red);border-color:var(--red)}
-.btn.small{min-height:38px;padding:0 12px;font-size:14px}
+.btn.small{min-height:38px;padding:0 12px;font-size:14px;border-radius:12px}
 .btn[disabled]{opacity:.55;cursor:default}
 .grow{flex:1 1 140px}
 .champ{display:grid;gap:6px}
 .champ>span{font-size:13px;font-weight:600;color:var(--muted)}
 .champ input,.champ textarea,.champ select{width:100%;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px}
+.champ input:focus,.champ textarea:focus,.champ select:focus{border-color:var(--brand);outline:none}
 .champ textarea{resize:vertical;min-height:84px}
 .aide{font-size:13px;color:var(--muted)}
-.bloc{display:grid;gap:12px;padding-block:6px 18px;border-bottom:1px solid var(--line)}
-.bloc:last-child{border-bottom:0}
+.bloc{display:grid;gap:12px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-s)}
 .bloc h2{font-size:19px}
+.bloc .champ input,.bloc .champ textarea,.bloc .champ select{background:var(--bg)}
+
+/* Compteur de l'équipe */
+.eq{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:14px;border-bottom:1px solid var(--line)}
+.eq:last-child{border-bottom:0}
+.eq-id{display:grid;gap:4px;min-width:0}
+.eq-id strong{font-size:16px;overflow-wrap:anywhere}
+.eq-id span{font-size:13px;color:var(--muted)}
+.eq-m{display:grid;justify-items:end;font-variant-numeric:tabular-nums}
+.eq-m strong{font-family:var(--font-display);font-size:20px;font-weight:700}
+.eq-m span{font-size:12.5px;color:var(--violet);font-weight:600}
 
 /* Bouton d'ajout flottant */
-.fab{position:fixed;z-index:6;right:max(16px,env(safe-area-inset-right,0px),calc(50% - var(--col) / 2 + 16px));bottom:calc(78px + env(safe-area-inset-bottom,0px));min-height:52px;padding:0 18px;border-radius:26px;border:0;background:var(--ink);color:var(--bg);font-weight:700;box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:8px}
+.fab{position:fixed;z-index:6;right:max(16px,env(safe-area-inset-right,0px),calc(50% - var(--col) / 2 + 16px));bottom:calc(80px + env(safe-area-inset-bottom,0px));min-height:52px;padding:0 20px;border-radius:26px;border:0;background:var(--brand);color:var(--brand-ink);font-weight:700;box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:8px}
 
 /* Onglets */
 .tabs{position:fixed;z-index:7;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-.tabs-in{display:grid;grid-template-columns:repeat(4,1fr)}
-.tab{position:relative;display:grid;justify-items:center;gap:2px;padding:9px 2px 8px;border:0;background:none;font-size:12px;font-weight:600;color:var(--muted)}
+.tabs-in{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.tab{position:relative;display:grid;justify-items:center;gap:2px;padding:8px 0 7px;border:0;background:none;font-size:11.5px;font-weight:600;color:var(--muted)}
+.tab svg{box-sizing:content-box;padding:3px 12px;border-radius:12px}
 .tab[aria-current="page"]{color:var(--brand)}
-.tab .badge{position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;padding:0 5px;background:var(--red);color:var(--bg);font-size:11px;font-weight:700;line-height:18px;text-align:center}
+.tab[aria-current="page"] svg{background:var(--brand-soft)}
+.tab .badge{position:absolute;top:3px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:9px;padding:0 5px;background:var(--red);color:var(--surface);font-size:11px;font-weight:700;line-height:18px;text-align:center}
 
 /* Panneau montant */
 .sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .voile{position:absolute;inset:0;background:var(--veil);border:0}
-.panneau{position:relative;width:100%;max-width:var(--col);max-height:94%;overflow-y:auto;background:var(--bg);border-radius:20px 20px 0 0;box-shadow:var(--shadow);padding-block:16px calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px;align-content:start}
+.panneau{position:relative;width:100%;max-width:var(--col);max-height:94%;overflow-y:auto;background:var(--bg);border-radius:24px 24px 0 0;box-shadow:var(--shadow);padding-block:10px calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px;align-content:start}
+.poignee{justify-self:center;width:44px;height:5px;border-radius:3px;background:var(--line)}
 .p-tete{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .p-tete h2{font-size:clamp(19px,5.6vw,24px);overflow-wrap:anywhere;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .fermer{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
 .numero{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.numero span{font-family:var(--font-display);font-size:clamp(21px,6.4vw,26px);font-weight:700;font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all;letter-spacing:.01em}
+.numero .tel{font-family:var(--font-display);font-size:clamp(21px,6.4vw,26px);font-weight:700;font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all;letter-spacing:.01em}
+.meta{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.attrib{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.attrib select{font-size:16px;font-weight:600;color:var(--ink);padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--surface);max-width:46vw}
 .actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .actions .btn{padding:0 8px;font-size:15px}
 .statuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.st{min-height:52px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:15px;padding:0 10px}
-.st[aria-pressed="true"]{border-color:transparent}
-.st.s-ambre[aria-pressed="true"]{background:var(--amber-soft);color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
-.st.s-bleu[aria-pressed="true"]{background:var(--blue-soft);color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue)}
-.st.s-violet[aria-pressed="true"]{background:var(--violet-soft);color:var(--violet);box-shadow:inset 0 0 0 2px var(--violet)}
-.st.s-vert[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 0 0 2px var(--brand)}
-.st.s-rouge[aria-pressed="true"]{background:var(--red-soft);color:var(--red);box-shadow:inset 0 0 0 2px var(--red)}
-.st.s-gris[aria-pressed="true"]{background:var(--grey-soft);color:var(--grey);box-shadow:inset 0 0 0 2px var(--grey)}
-.st:not([aria-pressed="true"]){background:var(--surface);color:var(--ink);box-shadow:none}
+.st{display:flex;align-items:center;gap:9px;min-height:52px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:15px;padding:0 12px;text-align:left}
+.st i{flex:none;width:10px;height:10px;border-radius:50%;background:var(--c)}
+.st.s-or i{background:var(--gold)}
+.st[aria-pressed="true"]{background:var(--cs);color:var(--c);border-color:transparent;box-shadow:inset 0 0 0 2px var(--c)}
 .rapides{display:flex;gap:8px;flex-wrap:wrap}
-details{border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+details{border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 summary{padding:12px 14px;font-weight:600;cursor:pointer}
 details>div{padding:0 14px 14px;display:grid;gap:12px}
 .script{white-space:pre-wrap;font-size:16px;line-height:1.55}
+.hist{display:grid;gap:10px}
+.hist li{display:grid;gap:1px;font-size:14px}
+.hist span{color:var(--muted);font-size:13px}
 .apercu{width:100%;border-collapse:collapse;font-size:14px}
 .apercu th,.apercu td{text-align:left;padding:6px 8px 6px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .apercu th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .scroll-x{overflow-x:auto}
 .ou{font-size:13px;font-weight:600;color:var(--muted);text-align:center}
-.check{display:flex;gap:10px;align-items:center;font-size:15px}
-.check input{width:20px;height:20px}
+.check{display:flex;gap:10px;align-items:center;font-size:15px;font-weight:600}
+.check input{width:22px;height:22px;accent-color:var(--brand)}
 .pied{position:sticky;bottom:0;z-index:1;display:grid;grid-template-columns:1.6fr 1fr;gap:8px;background:var(--bg);border-top:1px solid var(--line);margin-inline:-4px;padding:10px 4px calc(10px + env(safe-area-inset-bottom,0px))}
-.pied .btn{padding:0 8px;min-width:0;text-align:center;line-height:1.15}
+.pied .btn{padding:0 8px;min-width:0;line-height:1.15}
 .progress{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
 .progress i{display:block;height:100%;background:var(--brand);transition:width .2s}
 
-.toast{position:fixed;z-index:30;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));width:max-content;max-width:min(92vw,480px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:var(--shadow);text-align:center}
+.toast{position:fixed;z-index:30;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));width:max-content;max-width:min(92vw,480px);background:var(--gold);color:var(--gold-on);padding:11px 16px;border-radius:14px;font-size:14px;font-weight:700;box-shadow:var(--shadow);text-align:center}
+@media (max-width:360px){
+  .panneau{gap:10px}
+  .st{min-height:46px;font-size:14px;padding:0 10px;gap:7px}
+  .actions .btn{min-height:44px;font-size:14px}
+  .obj-n strong{font-size:30px}
+  .tab{font-size:10.5px}
+  .tab svg{padding:3px 8px}
+}
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 </style>
 
@@ -189,7 +236,7 @@ details>div{padding:0 14px 14px;display:grid;gap:12px}
       <h1>Shoresh 2026</h1>
       <span class="mode" id="mode"><i></i><span>Connexion…</span></span>
     </div>
-    <div class="obj-n"><strong id="o-donne">0 €</strong><span id="o-sur"></span></div>
+    <div class="obj-n"><strong id="o-donne">0 €</strong><span id="o-sur"></span><span class="pct" id="o-pct" hidden></span></div>
     <div class="bar" id="bar" hidden><i class="b-donne" id="b-donne"></i><i class="b-promis" id="b-promis"></i></div>
     <div class="obj-s" id="o-sub"></div>
   </div>
@@ -212,22 +259,25 @@ details>div{padding:0 14px 14px;display:grid;gap:12px}
 /* ---------- Constantes ---------- */
 const STATUTS = [
   {id:'a_appeler',    nom:'À appeler',      cl:'s-neutre'},
-  {id:'sans_reponse', nom:'Pas de réponse', cl:'s-ambre'},
-  {id:'rappeler',     nom:'À rappeler',     cl:'s-bleu'},
+  {id:'sans_reponse', nom:'Pas de réponse', cl:'s-ardoise'},
+  {id:'rappeler',     nom:'À rappeler',     cl:'s-cyan'},
   {id:'promesse',     nom:'Va donner',      cl:'s-violet'},
-  {id:'donne',        nom:'A donné',        cl:'s-vert'},
+  {id:'donne',        nom:'A donné',        cl:'s-or'},
   {id:'refus',        nom:'Refus',          cl:'s-rouge'},
   {id:'invalide',     nom:'Mauvais numéro', cl:'s-gris'},
 ];
 const ST = Object.fromEntries(STATUTS.map(s => [s.id, s]));
+const RANG = Object.fromEntries(STATUTS.map((s, i) => [s.id, i]));
+const RELANCE_MS = 2 * 86400e3;   // une promesse sans don depuis 2 jours est à relancer
 const CONFIG_DEFAUT = {
   objectif: 0,
   lien: 'https://www.allodons.fr/shoresh2026/nathan-p',
   script: "Bonjour {prenom}, c'est {moi}. Tu as deux minutes ?\n\nJe participe à la campagne de dons Shoresh 2026. [Explique en une phrase à quoi servent les dons.]\n\nEst-ce que tu peux nous soutenir ? Chaque don compte, même petit.\n\nJe t'envoie le lien tout de suite par WhatsApp. Merci beaucoup !",
   message: "Bonjour {prenom}, merci pour notre échange ! Voici le lien pour faire ton don à la campagne Shoresh 2026 : {lien}",
+  equipe: [],
 };
 const K_CONTACTS = 'shoresh.contacts.v1', K_CONFIG = 'shoresh.config.v1', K_PERSO = 'shoresh.perso.v1';
-const VUES = ['appels', 'rappels', 'script', 'reglages'];
+const VUES = ['appels', 'rappels', 'equipe', 'script', 'reglages'];
 
 /* ---------- État ---------- */
 const S = {
@@ -235,7 +285,7 @@ const S = {
   pret: false, lent: false, erreur: '', horsLigne: false,
   contacts: new Map(),
   config: {...CONFIG_DEFAUT},
-  perso: {prenom: '', lien: '', indicatif: '33', noteVue: false},
+  perso: {prenom: '', lien: '', indicatif: '33', noteVue: false, mes: false},
   vue: 'appels', vueRendue: '', filtre: 'tous', recherche: '', limite: 200,
   sheet: null, brouillon: null, suite: [],
   formSale: false,
@@ -335,33 +385,75 @@ function remplir(tpl, c) {
 }
 
 /* ---------- Données dérivées ---------- */
+const statutDe = c => ST[c.statut] ? c.statut : 'a_appeler';
+const moi = () => plain(String(S.perso.prenom || '').trim());
+const estAMoi = c => !!moi() && plain(String(c.pour || '').trim()) === moi();
+const aRelancer = c => c.statut === 'promesse' && (c.promisLe || c.maj || 0) < Date.now() - RELANCE_MS;
 function tous() {
   return [...S.contacts.entries()].map(([id, c]) => ({...c, id}))
     .sort((a, b) => (a.ordre || 0) - (b.ordre || 0) || String(a.nom).localeCompare(String(b.nom), 'fr'));
 }
+function base() { const l = tous(); return S.perso.mes && moi() ? l.filter(estAMoi) : l; }
 function listeFiltree() {
   const q = plain(S.recherche.trim()), qd = q.replace(/\D/g, '');
-  return tous().filter(c => {
-    if (S.filtre !== 'tous' && (c.statut || 'a_appeler') !== S.filtre) return false;
+  const l = base().filter(c => {
+    if (S.filtre === 'relance') { if (!aRelancer(c)) return false; }
+    else if (S.filtre !== 'tous' && statutDe(c) !== S.filtre) return false;
     if (!q) return true;
-    if (plain(c.nom).includes(q) || plain(c.note).includes(q)) return true;
+    if (plain(c.nom).includes(q) || plain(c.note).includes(q) || plain(c.pour).includes(q)) return true;
     return qd.length >= 2 && (String(c.tel).replace(/\D/g, '').includes(qd) || fmtTel(c.tel).replace(/\D/g, '').includes(qd));
   });
+  /* « Tous » : les contacts à appeler d'abord, puis les autres du plus récent au plus ancien */
+  if (S.filtre === 'tous') l.sort((a, b) => RANG[statutDe(a)] - RANG[statutDe(b)] || (statutDe(a) === 'a_appeler' ? 0 : (b.maj || 0) - (a.maj || 0)));
+  else if (S.filtre === 'relance') l.sort((a, b) => (a.promisLe || a.maj || 0) - (b.promisLe || b.maj || 0));
+  return l;
+}
+function equipe() {
+  const vus = new Map();
+  const add = n => { n = String(n || '').trim(); if (n && !vus.has(plain(n))) vus.set(plain(n), n); };
+  (Array.isArray(S.config.equipe) ? S.config.equipe : []).forEach(add);
+  add(S.perso.prenom);
+  for (const c of S.contacts.values()) { add(c.pour); add(c.par); }
+  return [...vus.values()];
 }
 function stats() {
-  const r = {total: 0, traites: 0, donne: 0, promis: 0, dus: 0, par: {}};
+  const r = {total: 0, traites: 0, donne: 0, promis: 0, dus: 0, relances: 0, libres: 0, attribues: 0};
   const fin = isoLocal(new Date(new Date().setHours(23, 59, 0, 0)));
   for (const c of S.contacts.values()) {
-    const s = ST[c.statut] ? c.statut : 'a_appeler';
-    r.total++; r.par[s] = (r.par[s] || 0) + 1;
+    const s = statutDe(c);
+    r.total++;
     if (s !== 'a_appeler') r.traites++;
     if (s === 'donne') r.donne += +c.donne || 0;
     if (s === 'promesse') r.promis += +c.promis || 0;
     if (s === 'rappeler' && (!c.rappel || c.rappel <= fin)) r.dus++;
+    if (aRelancer(c)) r.relances++;
+    if (c.pour) r.attribues++; else if (s === 'a_appeler') r.libres++;
   }
   return r;
 }
+/* Compteur par appelant : appels notés, promesses et dons obtenus, contacts restant à appeler */
+function compteurs() {
+  const m = new Map();
+  const g = n => {
+    const nom = String(n || '').trim(), k = plain(nom);
+    if (!m.has(k)) m.set(k, {nom, appels: 0, promesses: 0, promis: 0, dons: 0, donne: 0, restants: 0});
+    return m.get(k);
+  };
+  for (const c of S.contacts.values()) {
+    const s = statutDe(c);
+    if (Array.isArray(c.hist) && c.hist.length) { for (const h of c.hist) if (h) g(h.p).appels++; }
+    else if (s !== 'a_appeler') g(c.par).appels++;
+    if (s === 'promesse') { const x = g(c.par); x.promesses++; x.promis += +c.promis || 0; }
+    if (s === 'donne') { const x = g(c.par); x.dons++; x.donne += +c.donne || 0; }
+    if (s === 'a_appeler' && c.pour) g(c.pour).restants++;
+  }
+  return [...m.values()].sort((a, b) => b.donne - a.donne || b.promis - a.promis || b.appels - a.appels);
+}
 const maxOrdre = () => { let m = 0; for (const c of S.contacts.values()) if ((c.ordre || 0) > m) m = c.ordre; return m; };
+function initiales(nom) {
+  const m = String(nom || '').replace(/[^\p{L}\s]/gu, ' ').trim().split(/\s+/).filter(Boolean);
+  return m.length ? (m[0][0] + (m[1] ? m[1][0] : '')).toUpperCase() : '#';
+}
 
 /* ---------- Stockage ---------- */
 function enFile(cle, fn) {
@@ -537,9 +629,12 @@ function renderTop() {
   $('#o-donne').textContent = euro(st.donne);
   $('#o-sur').innerHTML = obj ? 'donnés sur ' + esc(euro(obj)) : 'donnés · <button type="button" class="lien-btn" data-a="vue" data-v="reglages">fixer un objectif</button>';
   $('#bar').hidden = !obj;
+  const pct = $('#o-pct');
+  pct.hidden = !obj;
   if (obj) {
     const a = Math.min(100, st.donne / obj * 100), b = Math.min(100 - a, st.promis / obj * 100);
     $('#b-donne').style.width = a + '%'; $('#b-promis').style.width = b + '%';
+    pct.textContent = Math.floor(st.donne / obj * 100) + ' %';
   }
   const parts = [];
   if (st.promis) parts.push('<span><b>+ ' + esc(euro(st.promis)) + '</b> promis</span>');
@@ -547,35 +642,39 @@ function renderTop() {
   if (obj && st.donne < obj) parts.push('<span>reste <b>' + esc(euro(obj - st.donne)) + '</b></span>');
   $('#o-sub').innerHTML = parts.join('');
 }
+const SVG = d => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ICO = {
-  appels: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
-  rappels: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M5 3 2 6M19 3l3 3"/></svg>',
-  script: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg>',
-  reglages: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',
+  appels: SVG('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>'),
+  rappels: SVG('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M5 3 2 6M19 3l3 3"/>'),
+  equipe: SVG('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>'),
+  script: SVG('<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>'),
+  reglages: SVG('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'),
   x: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   loupe: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
 };
 function renderTabs() {
-  const dus = stats().dus;
-  const noms = {appels: 'Appels', rappels: 'Rappels', script: 'Script', reglages: 'Réglages'};
+  const st = stats(), n = st.dus + st.relances;
+  const noms = {appels: 'Appels', rappels: 'Rappels', equipe: 'Équipe', script: 'Script', reglages: 'Réglages'};
   $('#tabs').innerHTML = VUES.map(v =>
-    `<button type="button" class="tab" data-a="vue" data-v="${v}" ${S.vue === v ? 'aria-current="page"' : ''}>${ICO[v]}<span>${noms[v]}</span>${v === 'rappels' && dus ? `<span class="badge">${dus}</span>` : ''}</button>`
+    `<button type="button" class="tab" data-a="vue" data-v="${v}" ${S.vue === v ? 'aria-current="page"' : ''}>${ICO[v]}<span>${noms[v]}</span>${v === 'rappels' && n ? `<span class="badge">${n}</span>` : ''}</button>`
   ).join('');
 }
 function construireVue() {
   const m = $('#main');
   if (S.vue === 'appels') { m.innerHTML = tplAppels(); rafraichirAppels(); }
   else if (S.vue === 'rappels') m.innerHTML = tplRappels();
+  else if (S.vue === 'equipe') m.innerHTML = tplEquipe();
   else if (S.vue === 'script') m.innerHTML = tplScript();
   else m.innerHTML = tplReglages();
 }
 function rafraichirVue() {
   if (S.vue === 'appels') rafraichirAppels();
   else if (S.vue === 'rappels') $('#main').innerHTML = tplRappels();
+  else if (S.vue === 'equipe') $('#main').innerHTML = tplEquipe();
   else if (!S.formSale) construireVue();
 }
 function tplLigne(c, entete) {
-  const s = ST[c.statut] || ST.a_appeler;
+  const s = ST[statutDe(c)];
   let pill = s.nom;
   if (s.id === 'donne' && c.donne) pill += ' · ' + euro(c.donne);
   if (s.id === 'promesse' && c.promis) pill += ' · ' + euro(c.promis);
@@ -583,9 +682,12 @@ function tplLigne(c, entete) {
   const sub = [];
   if (entete) sub.push(entete);
   else if (s.id === 'rappeler' && c.rappel) sub.push('Rappel ' + fmtRappel(c.rappel));
+  if (s.id === 'promesse') sub.push(c.lien ? 'Lien envoyé' : 'Lien à envoyer');
+  if (c.pour && !estAMoi(c)) sub.push('Pour ' + c.pour);
   if (c.note) sub.push(c.note);
   if (c.maj) sub.push((c.par ? c.par + ', ' : '') + relTime(c.maj));
   return `<button type="button" class="lig" data-a="ouvrir" data-id="${esc(c.id)}">
+    <span class="avatar ${s.cl}" aria-hidden="true">${esc(initiales(c.nom))}</span>
     <span class="lig-id"><span class="lig-nom">${esc(c.nom || 'Sans nom')}</span><span class="lig-tel">${esc(fmtTel(c.tel))}</span></span>
     <span class="pill ${s.cl}">${esc(pill)}</span>
     ${sub.length ? `<span class="lig-sub">${esc(sub.join(' · '))}</span>` : ''}
@@ -608,9 +710,15 @@ function tplEtat() {
   return h.join('');
 }
 function rafraichirAppels() {
-  const st = stats();
-  $('#chips').innerHTML = [{id: 'tous', nom: 'Tous', n: st.total}, ...STATUTS.map(s => ({id: s.id, nom: s.nom, n: st.par[s.id] || 0}))]
-    .map(f => `<button type="button" class="chip" data-a="filtre" data-f="${f.id}" aria-pressed="${S.filtre === f.id}">${esc(f.nom)}<b>${f.n}</b></button>`).join('');
+  const st = stats(), b = base(), par = {};
+  let rel = 0, miens = 0;
+  for (const c of b) { const s = statutDe(c); par[s] = (par[s] || 0) + 1; if (aRelancer(c)) rel++; }
+  for (const c of S.contacts.values()) if (estAMoi(c)) miens++;
+  const mesOn = !!(S.perso.mes && moi());
+  const filtres = [{id: 'tous', nom: 'Tous', n: b.length}, ...STATUTS.map(s => ({id: s.id, nom: s.nom, n: par[s.id] || 0}))];
+  if (rel || S.filtre === 'relance') filtres.splice(2, 0, {id: 'relance', nom: 'Promesses à relancer', n: rel});
+  $('#chips').innerHTML = `<button type="button" class="chip mes" data-a="mes" aria-pressed="${mesOn}">Mes contacts<b>${miens}</b></button>` +
+    filtres.map(f => `<button type="button" class="chip" data-a="filtre" data-f="${f.id}" aria-pressed="${S.filtre === f.id}">${esc(f.nom)}<b>${f.n}</b></button>`).join('');
   $('#etat').innerHTML = tplEtat();
   const el = $('#liste');
   $('#fab').hidden = !S.pret || !st.total;
@@ -622,18 +730,39 @@ function rafraichirAppels() {
     return;
   }
   const l = listeFiltree();
-  if (!l.length) { el.innerHTML = `<div class="vide"><p>Aucun contact ne correspond à ce filtre.</p></div>`; return; }
+  if (!l.length) {
+    el.innerHTML = `<div class="vide"><p>${mesOn && !b.length ? "Aucun contact ne t'est attribué pour le moment. Désactive « Mes contacts » pour voir toute la liste." : 'Aucun contact ne correspond à ce filtre.'}</p></div>`;
+    return;
+  }
   el.innerHTML = `<div class="liste">${l.slice(0, S.limite).map(c => tplLigne(c)).join('')}</div>` +
-    (l.length > S.limite ? `<div class="row" style="padding-top:14px"><button type="button" class="btn grow" data-a="plus">Afficher ${Math.min(200, l.length - S.limite)} contacts de plus</button></div>` : '');
+    (l.length > S.limite ? `<div class="row"><button type="button" class="btn grow" data-a="plus">Afficher ${Math.min(200, l.length - S.limite)} contacts de plus</button></div>` : '');
 }
+const depuis = ms => { const j = Math.floor((Date.now() - ms) / 86400e3); return j <= 0 ? "aujourd'hui" : j === 1 ? 'hier' : 'il y a ' + j + ' jours'; };
 function tplRappels() {
   const now = isoLocal(new Date()), fin = isoLocal(new Date(new Date().setHours(23, 59, 0, 0)));
   const l = tous().filter(c => c.statut === 'rappeler').sort((a, b) => (a.rappel || '9').localeCompare(b.rappel || '9'));
-  if (!l.length) return `<div class="vide"><h2>Aucun rappel prévu</h2><p>Quand quelqu'un te demande de rappeler plus tard, choisis « À rappeler » sur sa fiche et indique le moment. Il apparaîtra ici.</p></div>`;
+  const rel = tous().filter(aRelancer).sort((a, b) => (a.promisLe || a.maj || 0) - (b.promisLe || b.maj || 0));
+  if (!l.length && !rel.length) return `<div class="vide"><h2>Aucun rappel prévu</h2><p>Quand quelqu'un te demande de rappeler plus tard, choisis « À rappeler » sur sa fiche et indique le moment. Les promesses de don restées sans suite depuis 2 jours apparaissent aussi ici.</p></div>`;
   const g = {retard: [], auj: [], tard: [], sans: []};
   for (const c of l) (!c.rappel ? g.sans : c.rappel < now ? g.retard : c.rappel <= fin ? g.auj : g.tard).push(c);
-  const bloc = (titre, cl, arr) => arr.length ? `<h2 class="sec ${cl}">${titre} · ${arr.length}</h2><div class="liste">${arr.map(c => tplLigne(c, c.rappel ? 'Rappel ' + fmtRappel(c.rappel) : 'Sans date')).join('')}</div>` : '';
-  return bloc('En retard', 'retard', g.retard) + bloc("Aujourd'hui", '', g.auj) + bloc('Plus tard', '', g.tard) + bloc('Sans date', '', g.sans);
+  const bloc = (titre, cl, arr, txt) => arr.length ? `<h2 class="sec ${cl}">${titre} · ${arr.length}</h2><div class="liste">${arr.map(c => tplLigne(c, txt(c))).join('')}</div>` : '';
+  const quand = c => c.rappel ? 'Rappel ' + fmtRappel(c.rappel) : 'Sans date';
+  return bloc('En retard', 'retard', g.retard, quand) + bloc("Aujourd'hui", '', g.auj, quand) +
+    bloc('Promesses à relancer', '', rel, c => 'Promis ' + depuis(c.promisLe || c.maj || 0)) +
+    bloc('Plus tard', '', g.tard, quand) + bloc('Sans date', '', g.sans, quand);
+}
+function tplEquipe() {
+  const l = compteurs().filter(x => x.appels || x.restants), st = stats();
+  if (!l.length) return `<div class="vide"><h2>Le compteur de l'équipe est vide</h2><p>Dès qu'un appel est noté, chaque appelant apparaît ici avec ses appels, ses promesses et les dons obtenus.</p></div>`;
+  const max = Math.max(1, ...l.map(x => x.donne + x.promis));
+  return `<div class="liste">${l.map(x => `<div class="eq">
+      <span class="avatar ${x.donne ? 's-or' : 's-neutre'}" aria-hidden="true">${esc(initiales(x.nom))}</span>
+      <div class="eq-id"><strong>${esc(x.nom || 'Sans prénom')}${x.nom && plain(x.nom) === moi() ? ' (toi)' : ''}</strong>
+        <span>${x.appels} appel${x.appels > 1 ? 's' : ''} · ${x.dons} don${x.dons > 1 ? 's' : ''} · ${x.promesses} promesse${x.promesses > 1 ? 's' : ''}${x.restants ? ' · ' + x.restants + ' à appeler' : ''}</span>
+        <div class="bar mini"><i class="b-donne" style="width:${x.donne / max * 100}%"></i><i class="b-promis" style="width:${x.promis / max * 100}%"></i></div></div>
+      <div class="eq-m"><strong>${esc(euro(x.donne))}</strong>${x.promis ? `<span>+ ${esc(euro(x.promis))} promis</span>` : ''}</div>
+    </div>`).join('')}</div>
+    <p class="aide">Un don ou une promesse est compté pour la dernière personne qui a noté le contact.${st.libres ? ` ${st.libres} contact${st.libres > 1 ? 's' : ''} à appeler ${st.libres > 1 ? 'ne sont attribués' : "n'est attribué"} à personne : répartis-les dans Réglages.` : ''}</p>`;
 }
 function tplScript() {
   return `<section class="bloc"><h2>Script d'appel</h2>
@@ -648,7 +777,7 @@ function tplScript() {
   </section>`;
 }
 function tplReglages() {
-  const st = stats(), partage = S.mode === 'shared';
+  const st = stats(), partage = S.mode === 'shared', noms = equipe();
   return `<section class="bloc"><h2>Objectif de la campagne</h2>
     <label class="champ"><span>Objectif de collecte (€)</span><input id="c-objectif" data-f type="number" inputmode="decimal" min="0" step="50" value="${S.config.objectif ? esc(S.config.objectif) : ''}" placeholder="5000"></label>
     <label class="champ"><span>Lien de don de la campagne</span><input id="c-lien" data-f type="url" inputmode="url" value="${esc(S.config.lien)}"></label>
@@ -656,12 +785,18 @@ function tplReglages() {
     ${partage ? '<p class="aide">Objectif et lien sont communs à toute l\'équipe.</p>' : ''}
   </section>
   <section class="bloc"><h2>Toi</h2>
-    <label class="champ"><span>Ton prénom (affiché à côté de tes appels)</span><input id="p-prenom" data-f type="text" autocomplete="given-name" value="${esc(S.perso.prenom)}"></label>
+    <label class="champ"><span>Ton prénom (affiché à côté de tes appels)</span><input id="p-prenom" data-f type="text" autocomplete="given-name" list="dl-equipe" value="${esc(S.perso.prenom)}"></label>
+    <datalist id="dl-equipe">${noms.map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist>
     <label class="champ"><span>Ton lien de don personnel, s'il est différent</span><input id="p-lien" data-f type="url" inputmode="url" value="${esc(S.perso.lien)}" placeholder="Laisse vide pour utiliser le lien de la campagne"></label>
     <label class="champ"><span>Indicatif des numéros sans +</span><select id="p-ind" data-f>${[['33', 'France (+33)'], ['972', 'Israël (+972)'], ['32', 'Belgique (+32)'], ['41', 'Suisse (+41)'], ['352', 'Luxembourg (+352)'], ['1', 'États-Unis, Canada (+1)'], ['44', 'Royaume-Uni (+44)']].map(([v, n]) => `<option value="${v}" ${S.perso.indicatif === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
     <button type="button" class="btn primary" data-a="sauver-perso">Enregistrer</button>
     <p class="aide">Ces trois réglages restent sur cet appareil.</p>
   </section>
+  ${st.total ? `<section class="bloc"><h2>Répartir les contacts</h2>
+    <p class="aide">Partage entre les appelants les contacts « à appeler » qui ne sont attribués à personne. Chacun entre ensuite exactement le même prénom dans ses réglages et active « Mes contacts ».</p>
+    <label class="champ"><span>Prénoms de l'équipe, séparés par des virgules</span><input id="r-noms" data-f type="text" autocomplete="off" value="${esc(noms.join(', '))}"></label>
+    <div class="row" id="zone-repartir"><button type="button" class="btn primary grow" data-a="repartir">Répartir ${st.libres} contact${st.libres > 1 ? 's' : ''}</button>${st.attribues ? `<button type="button" class="btn grow" data-a="desattribuer">Retirer les attributions</button>` : ''}</div>
+  </section>` : ''}
   <section class="bloc"><h2>Liste de contacts</h2>
     <p class="aide">${st.total} contact${st.total > 1 ? 's' : ''}. ${partage ? "La liste est partagée en direct : chaque personne invitée comme éditeur voit et modifie les mêmes contacts." : "La liste est enregistrée sur cet appareil. Exporte-la pour la sauvegarder ou la transmettre."}</p>
     <div class="row"><button type="button" class="btn grow" data-a="importer">Importer des numéros</button><button type="button" class="btn grow" data-a="exporter" ${st.total ? '' : 'disabled'}>Exporter en Excel</button></div>
@@ -683,7 +818,7 @@ function renderSheet() {
   const haut = el.firstElementChild ? ($('.panneau', el) || {}).scrollTop : 0;
   const actif = document.activeElement && el.contains(document.activeElement) ? document.activeElement : null;
   const cleActif = actif && (actif.dataset.b ? `[data-b="${actif.dataset.b}"]` : actif.dataset.j ? `[data-j="${actif.dataset.j}"]` : '');
-  el.innerHTML = `<button type="button" class="voile" data-a="fermer" aria-label="Fermer"></button><div class="panneau" role="dialog" aria-modal="true">${corps}</div>`;
+  el.innerHTML = `<button type="button" class="voile" data-a="fermer" aria-label="Fermer"></button><div class="panneau" role="dialog" aria-modal="true"><span class="poignee" aria-hidden="true"></span>${corps}</div>`;
   el.hidden = false;
   document.documentElement.style.overflow = 'hidden';
   if (haut) $('.panneau', el).scrollTop = haut;
@@ -693,32 +828,43 @@ function tplContact() {
   const sh = S.sheet, c = S.contacts.get(sh.id), b = S.brouillon;
   if (!c || !b) return null;
   const tel = String(c.tel || ''), wa = tel.replace(/\D/g, ''), msg = remplir(S.config.message, c);
-  const actuel = ST[c.statut] || ST.a_appeler;
+  const actuel = ST[statutDe(c)];
+  const lienWa = `https://wa.me/${esc(wa)}?text=${encodeURIComponent(msg)}`;
   const champs = [];
   if (b.statut === 'rappeler') champs.push(`<label class="champ"><span>Rappeler le</span><input type="datetime-local" data-b="rappel" value="${esc(b.rappel)}"></label>
     <div class="rapides"><button type="button" class="btn small" data-a="rappel-vite" data-k="1h">Dans 1 h</button><button type="button" class="btn small" data-a="rappel-vite" data-k="soir">Ce soir 20 h</button><button type="button" class="btn small" data-a="rappel-vite" data-k="demain">Demain 18 h</button></div>`);
-  if (b.statut === 'promesse') champs.push(`<label class="champ"><span>Montant promis (€)</span><input type="number" inputmode="decimal" min="0" data-b="promis" value="${esc(b.promis)}" placeholder="Optionnel"></label>`);
+  if (b.statut === 'promesse') champs.push(`<label class="champ"><span>Montant promis (€)</span><input type="number" inputmode="decimal" min="0" data-b="promis" value="${esc(b.promis)}" placeholder="Optionnel"></label>
+    <a class="btn wa" href="${lienWa}" target="_blank" rel="noopener">Envoyer le lien de don par WhatsApp</a>
+    <label class="check"><input type="checkbox" data-bc="lien" ${b.lien ? 'checked' : ''}>Lien de don envoyé</label>`);
   if (b.statut === 'donne') champs.push(`<label class="champ"><span>Montant donné (€)</span><input type="number" inputmode="decimal" min="0" data-b="donne" value="${esc(b.donne)}" placeholder="Pour le total de la campagne"></label>`);
+  const noms = equipe();
+  if (b.pour && !noms.some(n => plain(n) === plain(b.pour))) noms.push(b.pour);
+  const hist = Array.isArray(c.hist) ? [...c.hist].reverse() : [];
+  const quand = t => new Date(t).toLocaleString('fr-FR', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
   return `<div class="p-tete"><h2>${esc(c.nom || 'Sans nom')}</h2><button type="button" class="fermer" data-a="fermer" aria-label="Fermer">${ICO.x}</button></div>
-  <div class="numero"><span>${esc(fmtTel(tel))}</span><span class="pill ${actuel.cl}" style="font-family:var(--font-body);font-size:12.5px;letter-spacing:0">${esc(actuel.nom)}</span></div>
+  <div class="numero"><span class="tel">${esc(fmtTel(tel))}</span><span class="pill ${actuel.cl}">${esc(actuel.nom)}</span></div>
+  ${+c.ancien ? `<div class="meta"><span class="pill s-or">Don précédent · ${esc(euro(c.ancien))}</span></div>` : ''}
   ${sh.autre ? `<div class="info alerte"><span>${esc(sh.autre.par || "Quelqu'un d'autre")} vient de modifier ce contact : ${esc(actuel.nom)}${actuel.id === 'donne' && c.donne ? ' · ' + esc(euro(c.donne)) : ''}. Si tu enregistres, ton résultat remplace le sien.</span></div>` : ''}
   <div class="actions">
     <a class="btn primary" href="tel:${esc(tel)}">Appeler</a>
-    <a class="btn" href="https://wa.me/${esc(wa)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">WhatsApp</a>
+    <a class="btn" href="${lienWa}" target="_blank" rel="noopener">WhatsApp</a>
     <a class="btn" href="sms:${esc(tel)}?&body=${encodeURIComponent(msg)}">SMS</a>
   </div>
   ${S.config.script ? `<details ${b.scriptOuvert ? 'open' : ''} data-d="scriptOuvert"><summary>Script d'appel</summary><div><p class="script">${esc(remplir(S.config.script, c))}</p></div></details>` : ''}
   <h3 class="sec">Résultat de l'appel</h3>
-  <div class="statuts">${STATUTS.slice(1).map(s => `<button type="button" class="st ${s.cl}" data-a="statut" data-s="${s.id}" aria-pressed="${b.statut === s.id}">${esc(s.nom)}</button>`).join('')}</div>
+  <div class="statuts">${STATUTS.slice(1).map(s => `<button type="button" class="st ${s.cl}" data-a="statut" data-s="${s.id}" aria-pressed="${b.statut === s.id}"><i></i>${esc(s.nom)}</button>`).join('')}</div>
   ${champs.join('')}
   <label class="champ"><span>Note</span><textarea data-b="note" rows="2" placeholder="Ce qu'il faut retenir de l'appel">${esc(b.note)}</textarea></label>
   ${S.perso.prenom ? '' : `<label class="champ"><span>Ton prénom, pour que l'équipe sache qui a appelé</span><input type="text" data-b="moi" value="${esc(b.moi || '')}" autocomplete="given-name"></label>`}
   <div class="row pied"><button type="button" class="btn primary grow" data-a="enregistrer-suivant">Enregistrer et suivant</button><button type="button" class="btn grow" data-a="enregistrer">Enregistrer</button></div>
+  <div class="meta"><label class="attrib"><span>Attribué à</span><select data-b="pour"><option value="">Personne</option>${noms.map(n => `<option value="${esc(n)}" ${plain(n) === plain(b.pour) ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label></div>
+  ${hist.length ? `<details ${b.histOuvert ? 'open' : ''} data-d="histOuvert"><summary>Historique · ${hist.length}</summary><div><ul class="hist">${hist.map(h => `<li><b>${esc((ST[h.s] || ST.a_appeler).nom)}${h.m ? ' · ' + esc(euro(h.m)) : ''}</b><span>${esc(h.p || 'Sans prénom')}, ${esc(quand(h.t))}</span></li>`).join('')}</ul></div></details>` : ''}
   <div class="row"><button type="button" class="btn small grow" data-a="copier-tel">Copier le numéro</button><button type="button" class="btn small grow" data-a="copier-msg">Copier le message</button></div>
   <p class="aide">Si l'appel ou le SMS ne se lance pas depuis cette page, copie le numéro et colle-le dans ton téléphone.</p>
   <details ${b.editOuvert ? 'open' : ''} data-d="editOuvert"><summary>Modifier ou supprimer</summary><div>
     <label class="champ"><span>Nom</span><input type="text" data-b="nom" value="${esc(b.nom)}"></label>
     <label class="champ"><span>Téléphone</span><input type="tel" inputmode="tel" data-b="tel" value="${esc(b.tel)}"></label>
+    <label class="champ"><span>Don précédent (€)</span><input type="number" inputmode="decimal" min="0" data-b="ancien" value="${esc(b.ancien)}" placeholder="Montant donné l'an dernier"></label>
     <div class="row"><button type="button" class="btn small grow" data-a="statut" data-s="a_appeler">Remettre « à appeler »</button>
     ${b.supprimer ? `<button type="button" class="btn small danger grow" data-a="supprimer-ok">Confirmer la suppression</button>` : `<button type="button" class="btn small danger grow" data-a="supprimer">Supprimer ce contact</button>`}</div>
   </div></details>`;
@@ -754,8 +900,9 @@ function tplImport() {
     <label class="champ"><span>Colonne des noms</span>${opt('nom', true)}</label>
     <label class="champ"><span>Colonne des prénoms</span>${opt('prenom', true)}</label>
     <label class="champ"><span>Colonne des notes</span>${opt('note', true)}</label>
+    <label class="champ"><span>Colonne du don précédent</span>${opt('ancien', true)}</label>
     <label class="check"><input type="checkbox" id="i-entetes" ${an.entetes ? 'checked' : ''}>Le fichier contient une ligne de titres</label>` : '') + `
-    <p class="obj-s">${resume.map(x => `<span>${x}</span>`).join('')}</p>
+    <p class="resume">${resume.map(x => `<span>${x}</span>`).join('')}</p>
     ${r.ajouts.length ? `<div class="scroll-x"><table class="apercu"><thead><tr><th>Nom</th><th>Téléphone</th></tr></thead><tbody>${r.ajouts.slice(0, 5).map(a => `<tr><td>${esc(a.data.nom)}</td><td>${esc(fmtTel(a.data.tel))}</td></tr>`).join('')}</tbody></table></div>${r.ajouts.length > 5 ? `<p class="aide">et ${r.ajouts.length - 5} autres.</p>` : ''}` : ''}
     ${m.cours ? `<div class="progress"><i style="width:${m.total ? Math.round(m.fait / m.total * 100) : 0}%"></i></div><p class="aide">Import en cours : ${m.fait} sur ${m.total}. Garde la page ouverte.</p>` : ''}
     <div class="row"><button type="button" class="btn primary grow" data-a="import-ok" ${!total || m.cours ? 'disabled' : ''}>${total ? `Importer ${total} contact${total > 1 ? 's' : ''}` : 'Rien à importer'}</button><button type="button" class="btn grow" data-a="import-retour" ${m.cours ? 'disabled' : ''}>Retour</button></div>`;
@@ -765,8 +912,8 @@ function tplImport() {
 function ouvrir(id) {
   const c = S.contacts.get(id);
   if (!c) return;
-  S.brouillon = {statut: ST[c.statut] ? c.statut : 'a_appeler', promis: c.promis || '', donne: c.donne || '', rappel: c.rappel || '', note: c.note || '', nom: c.nom || '', tel: fmtTel(c.tel), touche: false};
-  S.suite = (S.vue === 'rappels' ? tous().filter(x => x.statut === 'rappeler') : listeFiltree()).map(x => x.id);
+  S.brouillon = {statut: statutDe(c), promis: c.promis || '', donne: c.donne || '', rappel: c.rappel || '', note: c.note || '', pour: c.pour || '', lien: !!c.lien, ancien: c.ancien || '', nom: c.nom || '', tel: fmtTel(c.tel), touche: false};
+  S.suite = (S.vue === 'rappels' ? tous().filter(x => x.statut === 'rappeler' || aRelancer(x)) : listeFiltree()).map(x => x.id);
   ouvrirSheet({type: 'contact', id, majVu: c.maj || 0});
   const p = $('#sheet .panneau'); if (p) p.scrollTop = 0;
 }
@@ -791,21 +938,30 @@ function enregistrer(suivant) {
   }
   if (b.statut === 'donne' && !num(b.donne) && !b.sansMontantOk) {
     b.sansMontantOk = true;
-    toast('Indique le montant donné pour qu\'il compte dans le total. Enregistre à nouveau pour le laisser vide.');
+    toast("Indique le montant donné pour qu'il compte dans le total. Enregistre à nouveau pour le laisser vide.");
     const f = $('#sheet [data-b="donne"]'); if (f) f.focus();
     return;
   }
   if (b.moi && b.moi.trim()) sauverPerso({prenom: b.moi.trim()});
-  const avant = {statut: ST[c.statut] ? c.statut : 'a_appeler', note: c.note || '', promis: +c.promis || 0, donne: +c.donne || 0, rappel: c.rappel || ''};
+  const avant = {statut: statutDe(c), note: c.note || '', promis: +c.promis || 0, donne: +c.donne || 0, rappel: c.rappel || '', pour: c.pour || '', lien: !!c.lien, ancien: +c.ancien || 0};
   const cible = {
     statut: b.statut, note: String(b.note || '').trim(),
     promis: b.statut === 'promesse' ? num(b.promis) : b.statut === 'donne' ? avant.promis : 0,
     donne: b.statut === 'donne' ? num(b.donne) : 0,
     rappel: b.statut === 'rappeler' ? (b.rappel || '') : '',
+    pour: String(b.pour || '').trim(), lien: !!b.lien, ancien: num(b.ancien),
   };
+  const nouvelEssai = b.touche && b.statut === 'sans_reponse';
+  /* Celui qui note un résultat sur un contact libre le prend à son nom */
+  if (!cible.pour && S.perso.prenom && b.statut !== 'a_appeler' && (cible.statut !== avant.statut || nouvelEssai)) cible.pour = S.perso.prenom;
   const patch = {};
   for (const k in cible) if (cible[k] !== avant[k]) patch[k] = cible[k];
-  if (b.touche && b.statut === 'sans_reponse') patch.tentatives = (+c.tentatives || 0) + 1;
+  if (nouvelEssai) patch.tentatives = (+c.tentatives || 0) + 1;
+  if (patch.statut === 'promesse') patch.promisLe = Date.now();
+  if (patch.statut !== undefined || nouvelEssai || patch.donne !== undefined || patch.promis !== undefined) {
+    const h = {t: Date.now(), p: S.perso.prenom || '', s: b.statut, m: b.statut === 'donne' ? cible.donne : b.statut === 'promesse' ? cible.promis : 0};
+    patch.hist = [...(Array.isArray(c.hist) ? c.hist : []), h].slice(-20);
+  }
   const nom = String(b.nom || '').trim();
   if (nom && nom !== c.nom) patch.nom = nom;
   if (b.tel !== fmtTel(c.tel)) {
@@ -829,7 +985,7 @@ function verifierFiche() {
   if ((c.maj || 0) === sh.majVu) return;
   sh.majVu = c.maj || 0; sh.autre = {par: c.par || ''}; sh.autreOk = false;
   const b = S.brouillon;
-  if (b && !b.touche) Object.assign(b, {statut: ST[c.statut] ? c.statut : 'a_appeler', promis: c.promis || '', donne: c.donne || '', rappel: c.rappel || '', note: c.note || ''});
+  if (b && !b.touche) Object.assign(b, {statut: statutDe(c), promis: c.promis || '', donne: c.donne || '', rappel: c.rappel || '', note: c.note || '', pour: c.pour || '', lien: !!c.lien});
   renderSheet();
 }
 
@@ -870,13 +1026,14 @@ function texteVersLignes(txt) {
 const RX = {
   tel: /t[ée]l|phone|mobile|portable|num[ée]ro|gsm|cell/, tel2: /fixe|domicile|bureau|travail/, prenom: /pr[ée]nom|first/, nom: /nom|name|contact/, note: /note|comment|remarque/,
   statut: /statut|status|[ée]tat/, promis: /promis|promesse/, donne: /donn[ée]/, rappel: /rappel/, par: /appelant/, maj: /mis [àa] jour/, tentatives: /tentative/,
+  ancien: /dons?\s*(20\d\d|pr[ée]c|pass|ancien|dernier)|dernier don|^dons?(\s*\(.*\))?$/, pour: /attribu|assign/, lien: /lien envoy/,
 };
 function analyser(rows, fichier) {
   rows = rows.map(r => r.map(x => String(x ?? '').trim())).filter(r => r.some(x => x !== ''));
   if (!rows.length) return null;
   const n = Math.max(...rows.map(r => r.length));
   const ressembleTel = x => { const d = x.replace(/\D/g, ''); return d.length >= 8 && d.length <= 15 && d.length >= x.replace(/\s/g, '').length * 0.7 && !/^\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{2,4}$/.test(x); };
-  const CLES = ['prenom', 'statut', 'promis', 'donne', 'rappel', 'par', 'maj', 'tentatives', 'note', 'nom'];
+  const CLES = ['prenom', 'statut', 'ancien', 'promis', 'donne', 'rappel', 'pour', 'par', 'maj', 'tentatives', 'lien', 'note', 'nom'];
   /* La ligne de titres n'est pas toujours la première : on la cherche dans les 10 premières lignes */
   let debut = 0, entetes = false;
   if (fichier) {
@@ -889,7 +1046,7 @@ function analyser(rows, fichier) {
       if (score > best) { best = score; debut = i + 1; entetes = true; }
     });
   }
-  const cols = {tel: -1, tel2: -1, nom: -1, prenom: -1, note: -1, statut: -1, promis: -1, donne: -1, rappel: -1, par: -1, maj: -1, tentatives: -1};
+  const cols = {tel: -1, tel2: -1, nom: -1, prenom: -1, note: -1, ancien: -1, pour: -1, lien: -1, statut: -1, promis: -1, donne: -1, rappel: -1, par: -1, maj: -1, tentatives: -1};
   if (entetes) {
     const l1 = rows[debut - 1].map(x => x.toLowerCase());
     const tels = l1.map((h, i) => h && (RX.tel.test(h) || RX.tel2.test(h)) ? i : -1).filter(i => i >= 0);
@@ -937,18 +1094,22 @@ function construire(an) {
       statut: st.id, promis: num(col(r, 'promis')), donne: num(col(r, 'donne')),
       rappel: /^\d{4}-\d\d-\d\d[ T]\d\d:\d\d/.test(col(r, 'rappel')) ? col(r, 'rappel').slice(0, 16).replace(' ', 'T') : '',
       par: col(r, 'par'), tentatives: parseInt(col(r, 'tentatives'), 10) || 0,
+      lien: /^(oui|x|1|true)$/i.test(col(r, 'lien')),
       maj: Date.parse(col(r, 'maj').replace(' ', 'T')) || Date.now(),
     } : null;
-    const note = col(r, 'note');
+    const note = col(r, 'note'), ancien = num(col(r, 'ancien')), pour = col(r, 'pour');
     const exist = parTel.get(tel);
     if (exist) {
-      const c = S.contacts.get(exist);
-      if (res && (!c.statut || c.statut === 'a_appeler' || (res.maj || 0) > (c.maj || 0))) majs.push({id: exist, creer: false, data: note ? {...res, note} : res});
-      else doublons++;
+      /* Contact déjà présent : on complète sans écraser ce qui a été noté ici */
+      const c = S.contacts.get(exist), patch = {};
+      if (res && (!c.statut || c.statut === 'a_appeler' || (res.maj || 0) > (c.maj || 0))) Object.assign(patch, res, note ? {note} : {});
+      if (ancien && !+c.ancien) patch.ancien = ancien;
+      if (pour && !c.pour) patch.pour = pour;
+      if (Object.keys(patch).length) majs.push({id: exist, creer: false, data: patch}); else doublons++;
       continue;
     }
     const nom = [col(r, 'prenom'), col(r, 'nom')].filter(Boolean).join(' ') || fmtTel(tel);
-    ajouts.push({id: uid(), creer: true, data: {nom, tel, statut: 'a_appeler', promis: 0, donne: 0, rappel: '', note, tentatives: 0, par: '', maj: 0, cree: Date.now(), ordre: ordre++, ...(res || {})}});
+    ajouts.push({id: uid(), creer: true, data: {nom, tel, statut: 'a_appeler', promis: 0, donne: 0, rappel: '', note, pour, ancien, lien: false, tentatives: 0, par: '', maj: 0, cree: Date.now(), ordre: ordre++, ...(res || {})}});
   }
   return {ajouts, majs, doublons, sansTel};
 }
@@ -970,13 +1131,13 @@ async function lancerImport() {
 
 /* ---------- Export ---------- */
 async function exporter() {
-  const lignes = [['Nom', 'Téléphone', 'Statut', 'Promis (€)', 'Donné (€)', 'Rappel', 'Note', 'Tentatives', 'Dernier appelant', 'Mis à jour']];
-  for (const c of tous()) lignes.push([c.nom || '', c.tel || '', (ST[c.statut] || ST.a_appeler).nom, +c.promis || 0, +c.donne || 0, (c.rappel || '').replace('T', ' '), c.note || '', +c.tentatives || 0, c.par || '', c.maj ? isoLocal(new Date(c.maj)).replace('T', ' ') : '']);
+  const lignes = [['Nom', 'Téléphone', 'Statut', 'Promis (€)', 'Donné (€)', 'Don précédent (€)', 'Rappel', 'Note', 'Attribué à', 'Lien envoyé', 'Tentatives', 'Dernier appelant', 'Mis à jour']];
+  for (const c of tous()) lignes.push([c.nom || '', c.tel || '', (ST[c.statut] || ST.a_appeler).nom, +c.promis || 0, +c.donne || 0, +c.ancien || 0, (c.rappel || '').replace('T', ' '), c.note || '', c.pour || '', c.lien ? 'oui' : '', +c.tentatives || 0, c.par || '', c.maj ? isoLocal(new Date(c.maj)).replace('T', ' ') : '']);
   const jour = isoLocal(new Date()).slice(0, 10);
   let data, nom;
   if (window.XLSX) {
     const ws = XLSX.utils.aoa_to_sheet(lignes);
-    ws['!cols'] = [24, 16, 16, 11, 11, 17, 40, 11, 16, 17].map(w => ({wch: w}));
+    ws['!cols'] = [24, 16, 16, 11, 11, 17, 17, 40, 14, 12, 11, 16, 17].map(w => ({wch: w}));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Appels');
     data = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
@@ -1025,6 +1186,34 @@ const ACTIONS = {
   vue: el => allerVue(el.dataset.v),
   filtre: el => { S.filtre = el.dataset.f; S.limite = 200; rafraichirAppels(); },
   plus: () => { S.limite += 200; rafraichirAppels(); },
+  mes: () => {
+    if (!moi()) { toast('Entre ton prénom dans Réglages pour voir tes contacts.'); return; }
+    sauverPerso({mes: !S.perso.mes}); S.limite = 200; rafraichirAppels();
+  },
+  repartir: async () => {
+    const noms = [];
+    for (const n of $('#r-noms').value.split(/[,;\n]+/).map(x => x.trim()).filter(Boolean)) if (!noms.some(x => plain(x) === plain(n))) noms.push(n);
+    if (!noms.length) { toast('Entre au moins un prénom.'); return; }
+    const cibles = tous().filter(c => statutDe(c) === 'a_appeler' && !c.pour);
+    S.formSale = true;
+    const z = $('#zone-repartir'); if (z) z.innerHTML = '<p class="aide">Répartition en cours…</p>';
+    const ok = await store.sauverConfig({equipe: noms});
+    const r = ok && cibles.length ? await store.lot(cibles.map((c, i) => ({id: c.id, creer: false, data: {pour: noms[i % noms.length]}})), () => {}) : {fait: 0, echecs: 0};
+    S.formSale = false; render();
+    if (!ok) return;
+    toast(!cibles.length ? 'Équipe enregistrée. Aucun contact libre à répartir.' : r.echecs ? `${r.fait} contacts répartis, ${r.echecs} non enregistrés. Relance la répartition.` : `${r.fait} contact${r.fait > 1 ? 's' : ''} réparti${r.fait > 1 ? 's' : ''} entre ${noms.length} personne${noms.length > 1 ? 's' : ''}`);
+  },
+  desattribuer: () => {
+    $('#zone-repartir').innerHTML = `<button type="button" class="btn danger grow" data-a="desattribuer-ok">Oui, retirer les attributions</button><button type="button" class="btn grow" data-a="effacer-non">Annuler</button>`;
+  },
+  'desattribuer-ok': async () => {
+    const cibles = tous().filter(c => c.pour);
+    S.formSale = true;
+    $('#zone-repartir').innerHTML = '<p class="aide">Retrait en cours…</p>';
+    const r = await store.lot(cibles.map(c => ({id: c.id, creer: false, data: {pour: ''}})), () => {});
+    S.formSale = false; render();
+    toast(r.echecs ? `${r.fait} attributions retirées, ${r.echecs} restantes. Réessaie.` : 'Attributions retirées');
+  },
   ouvrir: el => ouvrir(el.dataset.id),
   fermer: () => { if (!(S.sheet && S.sheet.cours)) fermerSheet(); },
   ajouter: () => ouvrirSheet({type: 'ajout', nom: '', tel: '', note: ''}),
@@ -1070,7 +1259,7 @@ const ACTIONS = {
   effacer: () => {
     $('#zone-effacer').innerHTML = `<button type="button" class="btn danger grow" data-a="effacer-ok">Oui, tout effacer</button><button type="button" class="btn grow" data-a="effacer-non">Annuler</button>`;
   },
-  'effacer-non': () => construireVue(),
+  'effacer-non': () => { S.formSale = false; construireVue(); },
   'effacer-ok': async () => {
     const z = $('#zone-effacer');
     z.innerHTML = '<p class="aide">Suppression en cours…</p>';
@@ -1100,6 +1289,8 @@ document.addEventListener('change', async e => {
   } else if (t.dataset.col !== undefined && S.sheet && S.sheet.an) {
     S.sheet.an.cols[t.dataset.col] = +t.value;
     S.sheet.resultat = construire(S.sheet.an); renderSheet();
+  } else if (t.dataset.bc !== undefined && S.brouillon) {
+    S.brouillon[t.dataset.bc] = t.checked;
   } else if (t.id === 'i-entetes' && S.sheet && S.sheet.an) {
     S.sheet.an.entetes = t.checked;
     S.sheet.resultat = construire(S.sheet.an); renderSheet();
