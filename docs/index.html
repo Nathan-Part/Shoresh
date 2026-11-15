@@ -302,7 +302,7 @@ const CONFIG_DEFAUT = {
 };
 const K_CONTACTS = 'shoresh.contacts.v1', K_CONFIG = 'shoresh.config.v1', K_PERSO = 'shoresh.perso.v1';
 /* Adresse de l'application Web Google Apps Script qui stocke la liste commune (voir google-apps-script/Code.gs) */
-const API_URL = '';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzda-ljYSfIIA81wTFhKUgEcWH5yJyPhv6N-pJrkHdxbjRlUnSOR6NCn_8kooEKDFsXTQ/exec';
 const K_API = 'shoresh.api.v1', K_CODE = 'shoresh.code.v1';
 const apiValide = u => /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(String(u || ''));
 const INTRA_CLAUDE = !!(window.claude && typeof window.claude.use === 'function');
