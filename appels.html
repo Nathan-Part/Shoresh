@@ -907,7 +907,9 @@ function tplContact() {
   ${S.config.script ? `<details ${b.scriptOuvert ? 'open' : ''} data-d="scriptOuvert"><summary>Script d'appel</summary><div><p class="script">${esc(remplir(S.config.script, c))}</p></div></details>` : ''}
   <h3 class="sec">Résultat de l'appel</h3>
   <div class="statuts">${STATUTS.slice(1).map(s => `<button type="button" class="st ${s.cl}" data-a="statut" data-s="${s.id}" aria-pressed="${b.statut === s.id}"><i></i>${esc(s.nom)}</button>`).join('')}</div>
-  ${statutDe(c) !== 'a_appeler' ? `<button type="button" class="btn small${b.retirer ? ' danger' : ''}" data-a="retirer-resultat">${b.retirer ? 'Confirmer : retirer le résultat et son montant' : "Retirer le résultat de l'appel"}</button>` : ''}
+  ${b.retirer ? `<button type="button" class="btn small danger" data-a="retirer-resultat">Confirmer : annuler ce résultat et son montant</button>`
+    : statutDe(c) === 'sans_reponse' && b.statut === 'sans_reponse' ? `<button type="button" class="btn small" data-a="encore" aria-pressed="${!!b.touche}">Toujours pas de réponse (tentative ${(+c.tentatives || 1) + 1})</button>` : ''}
+  ${statutDe(c) !== 'a_appeler' && !b.retirer ? `<p class="aide">Touche à nouveau le résultat choisi pour l'annuler.</p>` : ''}
   ${champs.join('')}
   <label class="champ"><span>Note</span><textarea data-b="note" rows="2" placeholder="Ce qu'il faut retenir de l'appel">${esc(b.note)}</textarea></label>
   ${S.perso.prenom ? '' : noms.length
@@ -1238,25 +1240,26 @@ function ajouterContact(encore) {
   if (encore) { ouvrirSheet({type: 'ajout', nom: '', tel: '', note: ''}); const n = $('#j-nom'); if (n) n.focus(); }
   else fermerSheet();
 }
+/* Remet le contact comme s'il n'avait pas été appelé ; la note et l'historique sont gardés */
+function retirerResultat() {
+  const sh = S.sheet, c = S.contacts.get(sh.id), b = S.brouillon;
+  if (!c || !b) return;
+  if (S.mode === 'shared' && S.horsLigne) { toast('Pas de connexion : le résultat ne peut pas être retiré pour le moment.'); return; }
+  if ((+c.donne || +c.promis) && !b.retirer) { b.retirer = true; renderSheet(); return; }
+  const t = Date.now(), moi = S.perso.prenom || '';
+  const patch = {statut: 'a_appeler', promis: 0, donne: 0, rappel: '', moyen: '', lien: false, tentatives: 0, maj: t, par: moi,
+    hist: [...(Array.isArray(c.hist) ? c.hist : []), {t, p: moi, s: 'a_appeler', m: 0}].slice(-20)};
+  Object.assign(b, {statut: 'a_appeler', promis: '', donne: '', rappel: '', moyen: '', lien: false, touche: false, retirer: false, sansMontantOk: false});
+  sh.majVu = t; sh.autre = null;
+  S.epingles.add(sh.id);
+  store.sauver(sh.id, patch);
+  toast('Résultat annulé : le contact est de nouveau « à appeler »');
+}
 const ACTIONS = {
   vue: el => allerVue(el.dataset.v),
   filtre: el => { S.filtre = el.dataset.f; S.limite = 200; S.epingles.clear(); rafraichirAppels(); },
   detail: () => ouvrirSheet({type: 'detail'}),
-  /* Remet le contact comme s'il n'avait pas été appelé ; la note et l'historique sont gardés */
-  'retirer-resultat': () => {
-    const sh = S.sheet, c = S.contacts.get(sh.id), b = S.brouillon;
-    if (!c || !b) return;
-    if (S.mode === 'shared' && S.horsLigne) { toast('Pas de connexion : le résultat ne peut pas être retiré pour le moment.'); return; }
-    if ((+c.donne || +c.promis) && !b.retirer) { b.retirer = true; renderSheet(); return; }
-    const t = Date.now(), moi = S.perso.prenom || '';
-    const patch = {statut: 'a_appeler', promis: 0, donne: 0, rappel: '', moyen: '', lien: false, tentatives: 0, maj: t, par: moi,
-      hist: [...(Array.isArray(c.hist) ? c.hist : []), {t, p: moi, s: 'a_appeler', m: 0}].slice(-20)};
-    Object.assign(b, {statut: 'a_appeler', promis: '', donne: '', rappel: '', moyen: '', lien: false, touche: false, retirer: false, sansMontantOk: false});
-    sh.majVu = t; sh.autre = null;
-    S.epingles.add(sh.id);
-    store.sauver(sh.id, patch);
-    toast('Résultat retiré : le contact est de nouveau « à appeler »');
-  },
+  'retirer-resultat': () => retirerResultat(),
   moyen: el => { const b = S.brouillon; b.moyen = b.moyen === el.dataset.m ? '' : el.dataset.m; renderSheet(); },
   plus: () => { S.limite += 200; rafraichirAppels(); },
   mes: () => {
@@ -1321,7 +1324,19 @@ const ACTIONS = {
   importer: () => ouvrirSheet({type: 'import', etape: 'choix', texte: ''}),
   'note-ok': () => { sauverPerso({noteVue: true}); rafraichirAppels(); },
   reessayer: () => { if (db) demarrerPartage(); },
-  statut: el => { const b = S.brouillon; b.statut = el.dataset.s; b.touche = true; if (b.statut === 'donne' && !b.donne && b.promis) b.donne = b.promis; renderSheet(); },
+  statut: el => {
+    const b = S.brouillon, c = S.contacts.get(S.sheet.id), s = el.dataset.s;
+    if (b.statut === s) {
+      /* Retoucher le résultat déjà choisi l'annule */
+      if (c && statutDe(c) === s) retirerResultat();
+      else { b.statut = c ? statutDe(c) : 'a_appeler'; b.touche = false; renderSheet(); }
+      return;
+    }
+    b.statut = s; b.touche = true; b.retirer = false;
+    if (b.statut === 'donne' && !b.donne && b.promis) b.donne = b.promis;
+    renderSheet();
+  },
+  encore: () => { S.brouillon.touche = !S.brouillon.touche; renderSheet(); },
   'rappel-vite': el => {
     const d = new Date(), k = el.dataset.k;
     if (k === '1h') d.setMinutes(d.getMinutes() + 60);
