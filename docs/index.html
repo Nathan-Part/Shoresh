@@ -351,23 +351,45 @@ function normTel(brut, ind) {
   let e;
   if (plus) e = '+' + d;
   else if (d.startsWith('00')) e = '+' + d.slice(2);
-  else if (d.startsWith('0')) e = '+' + ind + d.slice(1);
+  else if (d.startsWith('0')) e = '+' + paysLocal(d, ind) + d.slice(1);
   else if (d.length >= 11) e = '+' + d;
+  /* Numéro dont Excel a supprimé le 0 du début */
+  else if (d.length === 9 && d[0] === '5') e = '+972' + d;
+  else if (d.length === 9 && (d[0] === '6' || d[0] === '7')) e = '+33' + d;
+  else if (d.length === 8) e = '+972' + d;
   else e = '+' + ind + d;
-  if (e.startsWith('+' + ind + '0')) e = '+' + ind + e.slice(ind.length + 2);
-  return e;
+  /* « +33 (0)6… » ou « +972 (0)50… » : le 0 entre parenthèses ne se compose pas */
+  return e.replace(/^\+(33|972)0/, '+$1');
+}
+/* Numéro local qui commence par 0 : 05… (10 chiffres) et 0X… (9 chiffres) sont israéliens, 06 et 07 sont français */
+function paysLocal(d, ind) {
+  if (d.length === 10 && d[1] === '5') return '972';
+  if (d.length === 10 && (d[1] === '6' || d[1] === '7')) return '33';
+  if (d.length === 9) return '972';
+  return ind;
+}
+/* Corrige un numéro enregistré avant la règle 05 = Israël */
+function telCorrige(t) {
+  t = String(t || '');
+  if (/^\+335\d{8}$/.test(t)) return '+972' + t.slice(3);   // 05 lu à tort comme français
+  if (/^\+33\d{8}$/.test(t)) return '+972' + t.slice(3);     // 8 chiffres : jamais un numéro français
+  return t;
 }
 const telValide = t => { const n = String(t).replace(/\D/g, '').length; return n >= 8 && n <= 15; };
 function fmtTel(t) {
   t = String(t ?? '');
-  const ind = S.perso.indicatif || '33';
-  if (t.startsWith('+' + ind)) {
-    const r = t.slice(ind.length + 1);
-    if (ind === '33' && r.length === 9) return '0' + r[0] + ' ' + r.slice(1).match(/.{2}/g).join(' ');
-    return '0' + r;
+  const enIsrael = S.perso.indicatif === '972';
+  if (/^\+33\d{9}$/.test(t)) {
+    const r = t.slice(3), b = r.slice(1).match(/.{2}/g).join(' ');
+    return enIsrael ? '+33 ' + r[0] + ' ' + b : '0' + r[0] + ' ' + b;
+  }
+  if (/^\+972\d{8,9}$/.test(t)) {
+    const r = t.slice(4), k = r.length - 7, loc = r.slice(0, k) + '-' + r.slice(k, k + 3) + '-' + r.slice(k + 3);
+    return enIsrael ? '0' + loc : '+972 ' + loc;
   }
   return t;
 }
+const telLocal = t => /^\+(33|972)/.test(t) ? '0' + String(t).replace(/^\+(33|972)/, '') : String(t);
 function prenomDe(nom) {
   const p = String(nom ?? '').trim().split(/\s+/)[0] || '';
   return /\d/.test(p) ? '' : p;
@@ -438,7 +460,7 @@ function listeFiltree() {
     }
     if (!q) return true;
     if (plain(c.nom).includes(q) || plain(c.note).includes(q) || plain(c.pour).includes(q) || plain(c.par).includes(q)) return true;
-    return qd.length >= 2 && (String(c.tel).replace(/\D/g, '').includes(qd) || fmtTel(c.tel).replace(/\D/g, '').includes(qd));
+    return qd.length >= 2 && (String(c.tel).replace(/\D/g, '').includes(qd) || telLocal(c.tel).replace(/\D/g, '').includes(qd));
   });
   if (S.filtre === 'relance') l.sort((a, b) => (a.promisLe || a.maj || 0) - (b.promisLe || b.maj || 0));
   return l;
@@ -761,7 +783,19 @@ const store = {
   },
 };
 function sauverPerso(patch) { S.perso = {...S.perso, ...patch}; LS.set(K_PERSO, S.perso); }
+let corrigeFait = false;
 function apresChargement() {
+  /* Une fois par visite : répare les numéros israéliens enregistrés avec +33 */
+  if (!corrigeFait && S.contacts.size) {
+    corrigeFait = true;
+    const tels = new Set([...S.contacts.values()].map(c => c.tel));
+    const items = [];
+    for (const [id, c] of S.contacts) {
+      const t = telCorrige(c.tel);
+      if (t !== c.tel && !tels.has(t)) { items.push({id, creer: false, data: {tel: t}}); tels.add(t); }
+    }
+    if (items.length) setTimeout(() => store.lot(items, () => {}).then(r => { if (r.fait) toast(r.fait + ' numéro' + (r.fait > 1 ? 's israéliens corrigés' : ' israélien corrigé') + ' (05 → +972)'); }), 0);
+  }
   const r = S.aRestaurer;
   if (r && r.sheet && r.sheet.type === 'contact' && S.contacts.has(r.sheet.id)) {
     S.sheet = {...r.sheet, majVu: S.contacts.get(r.sheet.id).maj || 0, autre: null}; S.brouillon = r.brouillon; S.suite = r.suite || [];
@@ -1270,7 +1304,7 @@ function texteVersLignes(txt) {
   });
 }
 const RX = {
-  tel: /t[ée]l|phone|mobile|portable|num[ée]ro|gsm|cell/, tel2: /fixe|domicile|bureau|travail/, prenom: /pr[ée]nom|first/, nom: /nom|name|contact/, note: /note|comment|remarque/,
+  tel: /t[ée]l|phone|mobile|portable|num[ée]ro|gsm|cell|נייד|טלפון/, tel2: /fixe|domicile|bureau|travail/, prenom: /pr[ée]nom|first/, nom: /nom|name|contact/, note: /note|comment|remarque/,
   statut: /statut|status|[ée]tat/, promis: /promis|promesse/, donne: /donn[ée]/, rappel: /rappel/, par: /appelant/, maj: /mis [àa] jour/, tentatives: /tentative/,
   ancien: /dons?\s*(20\d\d|pr[ée]c|pass|ancien|dernier)|dernier don|^dons?(\s*\(.*\))?$/, pour: /attribu|assign/, lien: /lien envoy/, moyen: /moyen|paiement/,
 };
