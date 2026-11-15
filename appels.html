@@ -900,7 +900,7 @@ function tplContact() {
   <div class="meta"><label class="attrib"><span>Attribué à</span><select data-attrib><option value="">Personne</option>${noms.map(n => `<option value="${esc(n)}" ${plain(n) === plain(c.pour) ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>${+c.ancien ? `<span class="pill s-or">Don précédent · ${esc(euro(c.ancien))}</span>` : ''}</div>
   ${sh.autre ? `<div class="info alerte"><span>${esc(sh.autre.par || "Quelqu'un d'autre")} vient de modifier ce contact : ${esc(actuel.nom)}${actuel.id === 'donne' && c.donne ? ' · ' + esc(euro(c.donne)) : ''}. Si tu enregistres, ton résultat remplace le sien.</span></div>` : ''}
   <div class="actions">
-    <a class="btn primary" href="tel:${esc(tel)}">Appeler</a>
+    <a class="btn primary" href="tel:${esc(tel)}" target="_blank" rel="noopener" data-a="appeler">Appeler</a>
     <a class="btn" href="${lienWa}" target="_blank" rel="noopener">WhatsApp</a>
     <a class="btn" href="sms:${esc(tel)}?&body=${encodeURIComponent(msg)}">SMS</a>
   </div>
@@ -918,7 +918,7 @@ function tplContact() {
   <div class="row pied"><button type="button" class="btn primary grow" data-a="enregistrer-suivant">Enregistrer et suivant</button><button type="button" class="btn grow" data-a="enregistrer">Enregistrer</button></div>
   ${hist.length ? `<details ${b.histOuvert ? 'open' : ''} data-d="histOuvert"><summary>Historique · ${hist.length}</summary><div><ul class="hist">${hist.map(h => `<li><b>${esc(h.s === 'a_appeler' ? 'Résultat retiré' : (ST[h.s] || ST.a_appeler).nom)}${h.m ? ' · ' + esc(euro(h.m)) : ''}</b><span>${esc(h.p || 'Sans prénom')}, ${esc(quand(h.t))}</span></li>`).join('')}</ul></div></details>` : ''}
   <div class="row"><button type="button" class="btn small grow" data-a="copier-tel">Copier le numéro</button><button type="button" class="btn small grow" data-a="copier-msg">Copier le message</button></div>
-  <p class="aide">Si l'appel ou le SMS ne se lance pas depuis cette page, copie le numéro et colle-le dans ton téléphone.</p>
+  <p class="aide">« Appeler » copie aussi le numéro. Si l'appel ne se lance pas, ouvre ton téléphone et colle le numéro.</p>
   <details ${b.editOuvert ? 'open' : ''} data-d="editOuvert"><summary>Modifier ou supprimer</summary><div>
     <label class="champ"><span>Nom</span><input type="text" data-b="nom" value="${esc(b.nom)}"></label>
     <label class="champ"><span>Téléphone</span><input type="tel" inputmode="tel" data-b="tel" value="${esc(b.tel)}"></label>
@@ -1344,6 +1344,8 @@ const ACTIONS = {
     else { d.setDate(d.getDate() + 1); d.setHours(18, 0, 0, 0); }
     S.brouillon.rappel = isoLocal(d); renderSheet();
   },
+  /* Le lien tel: est souvent bloqué dans la page : on copie le numéro en même temps, sans bloquer le lien */
+  appeler: () => { const c = S.contacts.get(S.sheet.id); if (c) copier(fmtTel(c.tel), "Numéro copié. Si l'appel ne se lance pas, colle-le dans ton téléphone."); },
   'copier-tel': () => { const c = S.contacts.get(S.sheet.id); if (c) copier(fmtTel(c.tel), 'Numéro copié'); },
   'copier-msg': () => { const c = S.contacts.get(S.sheet.id); if (c) copier(remplir(S.config.message, c), 'Message copié'); },
   'copier-lien': () => copier(lienDon(), 'Lien de don copié'),
