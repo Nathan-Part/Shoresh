@@ -425,12 +425,15 @@ function tous() {
     .sort((a, b) => (a.ordre || 0) - (b.ordre || 0) || String(a.nom).localeCompare(String(b.nom), 'fr'));
 }
 /* Un contact qu'on vient de noter reste affiché à sa place, même s'il ne correspond plus au filtre */
-function base() { const l = tous(); return S.perso.mes && moi() ? l.filter(c => estAMoi(c) || S.epingles.has(c.id)) : l; }
+const parMoi = c => !!moi() && (plain(String(c.par || '').trim()) === moi() || (Array.isArray(c.hist) && c.hist.some(h => h && plain(String(h.p || '').trim()) === moi())));
+const estMien = c => estAMoi(c) || parMoi(c);
+function base() { return tous(); }
 function listeFiltree() {
   const q = plain(S.recherche.trim()), qd = q.replace(/\D/g, '');
   const l = base().filter(c => {
     if (!S.epingles.has(c.id)) {
       if (S.filtre === 'relance') { if (!aRelancer(c)) return false; }
+      else if (S.filtre === 'mes') { if (!estMien(c)) return false; }
       else if (S.filtre !== 'tous' && statutDe(c) !== S.filtre) return false;
     }
     if (!q) return true;
@@ -921,11 +924,10 @@ function rafraichirAppels() {
   const st = stats(), b = base(), par = {};
   let rel = 0, miens = 0;
   for (const c of b) { const s = statutDe(c); par[s] = (par[s] || 0) + 1; if (aRelancer(c)) rel++; }
-  for (const c of S.contacts.values()) if (estAMoi(c)) miens++;
-  const mesOn = !!(S.perso.mes && moi());
+  for (const c of S.contacts.values()) if (estMien(c)) miens++;
   const filtres = [{id: 'tous', nom: 'Tous', n: b.length}, ...STATUTS.map(s => ({id: s.id, nom: s.nom, n: par[s.id] || 0}))];
   if (rel || S.filtre === 'relance') filtres.splice(2, 0, {id: 'relance', nom: 'Promesses à relancer', n: rel});
-  $('#chips').innerHTML = `<button type="button" class="chip mes" data-a="mes" aria-pressed="${mesOn}">Mes contacts<b>${miens}</b></button>` +
+  $('#chips').innerHTML = `<button type="button" class="chip mes" data-a="filtre" data-f="mes" aria-pressed="${S.filtre === 'mes'}">Mes contacts<b>${miens}</b></button>` +
     filtres.map(f => `<button type="button" class="chip" data-a="filtre" data-f="${f.id}" aria-pressed="${S.filtre === f.id}">${esc(f.nom)}<b>${f.n}</b></button>`).join('');
   $('#etat').innerHTML = tplEtat();
   const el = $('#liste');
@@ -939,7 +941,7 @@ function rafraichirAppels() {
   }
   const l = listeFiltree();
   if (!l.length) {
-    el.innerHTML = `<div class="vide"><p>${mesOn && !b.length ? "Aucun contact ne t'est attribué pour le moment. Désactive « Mes contacts » pour voir toute la liste." : 'Aucun contact ne correspond à ce filtre.'}</p></div>`;
+    el.innerHTML = `<div class="vide"><p>${S.filtre === 'mes' ? "Tu n'as encore noté aucun appel, et aucun contact ne t'est attribué. Ceux que tu appelles apparaîtront ici." : 'Aucun contact ne correspond à ce filtre.'}</p></div>`;
     return;
   }
   el.innerHTML = `<div class="liste">${l.slice(0, S.limite).map(c => tplLigne(c)).join('')}</div>` +
@@ -1098,9 +1100,8 @@ function tplContact() {
   ${S.config.script ? `<details ${b.scriptOuvert ? 'open' : ''} data-d="scriptOuvert"><summary>Script d'appel</summary><div><p class="script">${esc(remplir(S.config.script, c))}</p></div></details>` : ''}
   <h3 class="sec">Résultat de l'appel</h3>
   <div class="statuts">${STATUTS.slice(1).map(s => `<button type="button" class="st ${s.cl}" data-a="statut" data-s="${s.id}" aria-pressed="${b.statut === s.id}"><i></i>${esc(s.nom)}</button>`).join('')}</div>
-  ${b.retirer ? `<button type="button" class="btn small danger" data-a="retirer-resultat">Confirmer : annuler ce résultat et son montant</button>`
-    : statutDe(c) === 'sans_reponse' && b.statut === 'sans_reponse' ? `<button type="button" class="btn small" data-a="encore" aria-pressed="${!!b.touche}">Toujours pas de réponse (tentative ${(+c.tentatives || 1) + 1})</button>` : ''}
-  ${statutDe(c) !== 'a_appeler' && !b.retirer ? `<p class="aide">Touche à nouveau le résultat choisi pour l'annuler.</p>` : ''}
+  ${statutDe(c) === 'sans_reponse' && b.statut === 'sans_reponse' ? `<button type="button" class="btn small" data-a="encore" aria-pressed="${!!b.touche}">Toujours pas de réponse (tentative ${(+c.tentatives || 1) + 1})</button>` : ''}
+  ${statutDe(c) !== 'a_appeler' ? `<p class="aide">Touche à nouveau le résultat choisi pour l'annuler.</p>` : ''}
   ${champs.join('')}
   <label class="champ"><span>Note</span><textarea data-b="note" rows="2" placeholder="Ce qu'il faut retenir de l'appel">${esc(b.note)}</textarea></label>
   <div class="row pied"><button type="button" class="btn primary grow" data-a="enregistrer-suivant">Enregistrer et suivant</button><button type="button" class="btn grow" data-a="enregistrer">Enregistrer</button></div>
@@ -1168,7 +1169,7 @@ function suivantDe(id) {
   for (let k = i + 1; k < S.suite.length; k++) {
     const c = S.contacts.get(S.suite[k]);
     if (!c) continue;
-    if (S.vue === 'rappels' || S.filtre !== 'tous' || !c.statut || c.statut === 'a_appeler') return S.suite[k];
+    if (S.vue === 'rappels' || (S.filtre !== 'tous' && S.filtre !== 'mes') || !c.statut || c.statut === 'a_appeler') return S.suite[k];
   }
   return null;
 }
@@ -1433,7 +1434,6 @@ function retirerResultat() {
   const sh = S.sheet, c = S.contacts.get(sh.id), b = S.brouillon;
   if (!c || !b) return;
   if (S.mode === 'shared' && S.horsLigne) { toast('Pas de connexion : le résultat ne peut pas être retiré pour le moment.'); return; }
-  if ((+c.donne || +c.promis) && !b.retirer) { b.retirer = true; renderSheet(); return; }
   const t = Date.now(), moi = S.perso.prenom || '';
   const patch = {statut: 'a_appeler', promis: 0, donne: 0, rappel: '', moyen: '', lien: false, tentatives: 0, maj: t, par: moi,
     hist: [...(Array.isArray(c.hist) ? c.hist : []), {t, p: moi, s: 'a_appeler', m: 0}].slice(-20)};
@@ -1450,10 +1450,6 @@ const ACTIONS = {
   'retirer-resultat': () => retirerResultat(),
   moyen: el => { const b = S.brouillon; b.moyen = b.moyen === el.dataset.m ? '' : el.dataset.m; renderSheet(); },
   plus: () => { S.limite += 200; rafraichirAppels(); },
-  mes: () => {
-    if (!moi()) { toast('Entre ton prénom dans Réglages pour voir tes contacts.'); return; }
-    sauverPerso({mes: !S.perso.mes}); S.limite = 200; S.epingles.clear(); rafraichirAppels();
-  },
   repartir: async () => {
     const noms = equipe();
     if (!noms.length) { toast("Ajoute d'abord une personne dans l'équipe."); return; }
