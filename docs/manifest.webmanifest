@@ -1,0 +1,16 @@
+{
+  "name": "Appels Shoresh 2026",
+  "short_name": "Shoresh",
+  "description": "Liste d'appels partagée de la campagne de dons Shoresh 2026.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F4FA",
+  "theme_color": "#121A46",
+  "icons": [
+    {"src": "logo-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "logo-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "logo-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
