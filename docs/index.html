@@ -872,8 +872,9 @@ function tplAppels() {
 function tplEtat() {
   const h = [];
   if (S.horsLigne && S.mode === 'shared') h.push(`<div class="info alerte"><span>Tu es hors connexion. Les résultats notés maintenant ne seront pas enregistrés dans la liste partagée.</span></div>`);
-  if (S.erreur) h.push(`<div class="info alerte"><span>La liste partagée ne répond plus. Tes dernières modifications n'ont peut-être pas été envoyées.</span><button type="button" class="btn small" data-a="reessayer">Réessayer</button></div>`);
-  else if (S.lent) h.push(`<div class="info alerte"><span>${S.pret ? 'La liste partagée met du temps à répondre. Ce que tu vois date peut-être de ta dernière visite.' : "La liste partagée met du temps à répondre. Vérifie ta connexion."}</span></div>`);
+  const aideScript = "Vérifie le déploiement du script : Application Web, exécuter en tant que « Moi », accès « Tout le monde ».";
+  if (S.erreur) h.push(`<div class="info alerte"><span>${S.parSheet ? "Impossible de joindre le script Google. " + aideScript : "La liste partagée ne répond plus. Tes dernières modifications n'ont peut-être pas été envoyées."}</span><button type="button" class="btn small" data-a="reessayer">Réessayer</button></div>`);
+  else if (S.lent) h.push(`<div class="info alerte"><span>${S.pret ? 'La liste partagée met du temps à répondre. Ce que tu vois date peut-être de ta dernière visite.' : S.parSheet ? "Le script Google ne répond pas encore. " + aideScript : "La liste partagée met du temps à répondre. Vérifie ta connexion."}</span></div>`);
   if (S.mode === 'local' && window.claude && !S.perso.noteVue) h.push(`<div class="info"><span>Ta liste est enregistrée sur cet appareil seulement. Pour voir la liste partagée de l'équipe, demande à être invité comme éditeur de cette page et ouvre-la en étant connecté.</span><button type="button" class="btn small" data-a="note-ok">Compris</button></div>`);
   if (!S.stockageOk) h.push(`<div class="info alerte"><span>Cet appareil refuse d'enregistrer les données. Exporte ta liste avant de fermer la page.</span></div>`);
   return h.join('');
