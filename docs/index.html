@@ -130,6 +130,10 @@ main{padding-block:16px 150px;display:grid;gap:14px;align-content:start}
 
 /* Lignes de contact, groupées dans une carte */
 .liste-champs{display:grid;gap:12px}
+.valeurs{display:grid;gap:4px;margin:0}
+.valeurs dt{font-size:13px;font-weight:600;color:var(--muted)}
+.valeurs dd{margin:0 0 8px;font-weight:600}
+.lien-txt{overflow-wrap:anywhere;font-weight:500}
 .liste{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-s)}
 .lig{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:3px 12px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 14px}
 .lig:last-child{border-bottom:0}
@@ -1064,13 +1068,25 @@ function tplScript() {
     ${S.mode === 'shared' ? '<p class="aide">Ces textes sont communs à toute l\'équipe.</p>' : ''}
   </section>`;
 }
+/* Objectif et lien de la campagne : seul le responsable les change quand la liste est partagée */
+function peutGererCampagne() {
+  if (S.mode !== 'shared') return true;
+  const resp = String(S.config.responsable || '').trim();
+  return !!resp && plain(resp) === moi();
+}
 function tplReglages() {
   const st = stats(), partage = S.mode === 'shared', noms = equipe();
-  return `<section class="bloc"><h2>Objectif de la campagne</h2>
+  const resp = String(S.config.responsable || '').trim(), modifiable = peutGererCampagne();
+  const blocCampagne = modifiable ? `
     <label class="champ"><span>Objectif de collecte (€)</span><input id="c-objectif" data-f type="number" inputmode="decimal" min="0" step="50" value="${S.config.objectif ? esc(S.config.objectif) : ''}" placeholder="5000"></label>
     <label class="champ"><span>Lien de don de la campagne</span><input id="c-lien" data-f type="url" inputmode="url" value="${esc(S.config.lien)}"></label>
     <button type="button" class="btn primary" data-a="sauver-config">Enregistrer</button>
-    ${partage ? '<p class="aide">Objectif et lien sont communs à toute l\'équipe.</p>' : ''}
+    ${partage ? `<p class="aide">Tu es responsable de la campagne : toi seul peux modifier l'objectif et le lien de don, communs à toute l'équipe.</p>` : ''}` : `
+    <dl class="valeurs"><dt>Objectif de collecte</dt><dd>${S.config.objectif ? esc(euro(S.config.objectif)) : 'Pas encore fixé'}</dd><dt>Lien de don de la campagne</dt><dd class="lien-txt">${esc(S.config.lien || '—')}</dd></dl>
+    ${resp ? `<p class="aide">Seul ${esc(resp)} peut modifier l'objectif et le lien de la campagne. Pour envoyer ton propre lien de don, mets-le dans « Toi » ci-dessous.</p>`
+      : `<p class="aide">Personne ne gère encore la campagne. Le responsable sera le seul à pouvoir modifier l'objectif et le lien de don. Pour envoyer ton propre lien, mets-le dans « Toi » ci-dessous.</p>
+         <button type="button" class="btn" data-a="devenir-resp">C'est moi qui gère la campagne</button>`}`;
+  return `<section class="bloc"><h2>Objectif de la campagne</h2>${blocCampagne}
   </section>
   <section class="bloc"><h2>Toi</h2>
     <div class="row" style="align-items:center;justify-content:space-between"><p>Tu es <b>${esc(S.perso.prenom)}</b>.</p><button type="button" class="btn small" data-a="pas-moi">Ce n'est pas moi</button></div>
@@ -1084,7 +1100,7 @@ function tplReglages() {
     <div class="row"><button type="button" class="btn grow" data-a="importer">Importer des numéros</button><button type="button" class="btn grow" data-a="exporter" ${st.total ? '' : 'disabled'}>Exporter en Excel</button></div>
     ${S.parSheet ? `<p class="aide">La liste est enregistrée dans le Google Sheet de la campagne.</p><button type="button" class="btn small" data-a="quitter">Changer de code d'équipe</button>` : ''}
   </section>
-  ${st.total && (!partage || S.proprio) ? `<section class="bloc"><h2>Effacer la liste</h2>
+  ${st.total && peutGererCampagne() ? `<section class="bloc"><h2>Effacer la liste</h2>
     <p class="aide">${partage ? 'Supprime tous les contacts et leurs résultats pour toute l\'équipe.' : 'Supprime tous les contacts et leurs résultats de cet appareil.'} Exporte la liste avant si tu veux la garder.</p>
     <div class="row" id="zone-effacer"><button type="button" class="btn danger" data-a="effacer">Effacer les ${st.total} contacts</button></div>
   </section>` : ''}`;
@@ -1514,6 +1530,11 @@ const ACTIONS = {
     render(); toast('Sur cet appareil, tu es ' + nom);
   },
   'identite-existant': () => { const v = $('#i-existant') && $('#i-existant').value; if (!v) { toast('Choisis ton nom dans la liste.'); return; } devenir(v); },
+  'devenir-resp': async () => {
+    if (String(S.config.responsable || '').trim()) { construireVue(); return; }
+    const ok = await store.sauverConfig({responsable: S.perso.prenom});
+    if (ok) { S.formSale = false; construireVue(); toast('Tu es responsable de la campagne'); }
+  },
   'pas-moi': () => { sauverPerso({prenom: '', mes: false}); S.vueRendue = ''; render(); },
   'eq-retirer': el => { S.eqRetirer = el.dataset.n; S.formSale = false; construireVue(); },
   'eq-retirer-non': () => { S.eqRetirer = ''; construireVue(); },
@@ -1583,6 +1604,7 @@ const ACTIONS = {
   'import-ok': () => lancerImport(),
   exporter: () => exporter(),
   'sauver-config': async () => {
+    if (!peutGererCampagne()) { toast('Seul le responsable de la campagne peut modifier ces réglages.'); construireVue(); return; }
     S.formSale = false;
     const ok = await store.sauverConfig({objectif: num($('#c-objectif').value), lien: $('#c-lien').value.trim()});
     if (ok) toast('Objectif et lien enregistrés');
@@ -1602,6 +1624,7 @@ const ACTIONS = {
   },
   'effacer-non': () => { S.formSale = false; construireVue(); },
   'effacer-ok': async () => {
+    if (!peutGererCampagne()) { construireVue(); return; }
     const z = $('#zone-effacer');
     z.innerHTML = '<p class="aide">Suppression en cours…</p>';
     const r = await store.toutEffacer(() => {});
