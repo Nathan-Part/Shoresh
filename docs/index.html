@@ -447,8 +447,10 @@ function tous() {
     .sort((a, b) => (a.ordre || 0) - (b.ordre || 0) || String(a.nom).localeCompare(String(b.nom), 'fr'));
 }
 /* Un contact qu'on vient de noter reste affiché à sa place, même s'il ne correspond plus au filtre */
-const parMoi = c => !!moi() && (plain(String(c.par || '').trim()) === moi() || (Array.isArray(c.hist) && c.hist.some(h => h && plain(String(h.p || '').trim()) === moi())));
-const estMien = c => estAMoi(c) || parMoi(c);
+/* Qui a noté le résultat actuel : le dernier résultat de l'historique (une note modifiée ne compte pas) */
+const auteur = c => { const h = Array.isArray(c.hist) && c.hist.length ? c.hist[c.hist.length - 1] : null; return String((h ? h.p : c.par) || '').trim(); };
+/* Mes contacts : ceux dont le résultat actuel a été noté par moi */
+const estMien = c => !!moi() && statutDe(c) !== 'a_appeler' && plain(auteur(c)) === moi();
 function base() { return tous(); }
 function listeFiltree() {
   const q = plain(S.recherche.trim()), qd = q.replace(/\D/g, '');
@@ -506,9 +508,9 @@ function compteurs() {
   for (const c of S.contacts.values()) {
     const s = statutDe(c);
     if (Array.isArray(c.hist) && c.hist.length) { for (const h of c.hist) if (h && h.s !== 'a_appeler') g(h.p).appels++; }
-    else if (s !== 'a_appeler') g(c.par).appels++;
-    if (s === 'promesse') { const x = g(c.par); x.promesses++; x.promis += +c.promis || 0; }
-    if (s === 'donne') { const x = g(c.par); x.dons++; x.donne += +c.donne || 0; }
+    else if (s !== 'a_appeler') g(auteur(c)).appels++;
+    if (s === 'promesse') { const x = g(auteur(c)); x.promesses++; x.promis += +c.promis || 0; }
+    if (s === 'donne') { const x = g(auteur(c)); x.dons++; x.donne += +c.donne || 0; }
     if (s === 'a_appeler' && c.pour) g(c.pour).restants++;
   }
   return [...m.values()].sort((a, b) => b.donne - a.donne || b.promis - a.promis || b.appels - a.appels);
@@ -885,7 +887,7 @@ function tplLigne(c, entete) {
   if (s.id === 'promesse' && c.promis) pill += ' · ' + euro(c.promis);
   if (s.id === 'sans_reponse' && c.tentatives > 1) pill += ' ×' + c.tentatives;
   const sub = [];
-  if (s.id !== 'a_appeler' && c.maj) sub.push((c.par ? 'Appelé par ' + c.par : 'Appelé') + ' ' + relTime(c.maj));
+  if (s.id !== 'a_appeler' && c.maj) sub.push((auteur(c) ? 'Appelé par ' + auteur(c) : 'Appelé') + ' ' + relTime(c.maj));
   if (entete) sub.push(entete);
   else if (s.id === 'rappeler' && c.rappel) sub.push('Rappel ' + fmtRappel(c.rappel));
   if (s.id === 'promesse') sub.push(c.lien ? 'Lien envoyé' : 'Lien à envoyer');
@@ -975,7 +977,7 @@ function rafraichirAppels() {
   }
   const l = listeFiltree();
   if (!l.length) {
-    el.innerHTML = `<div class="vide"><p>${S.filtre === 'mes' ? "Tu n'as encore noté aucun appel, et aucun contact ne t'est attribué. Ceux que tu appelles apparaîtront ici." : 'Aucun contact ne correspond à ce filtre.'}</p></div>`;
+    el.innerHTML = `<div class="vide"><p>${S.filtre === 'mes' ? "Aucun contact n'a pour l'instant un résultat noté par toi. Ceux que tu appelles apparaîtront ici." : 'Aucun contact ne correspond à ce filtre.'}</p></div>`;
     return;
   }
   el.innerHTML = `<div class="liste">${l.slice(0, S.limite).map(c => tplLigne(c)).join('')}</div>` +
@@ -1044,9 +1046,9 @@ function tplDetail() {
   for (const c of dons) { const k = c.moyen || 'Non précisé'; if (c.moyen) precise = true; moyens[k] = (moyens[k] || 0) + (+c.donne || 0); }
   const parQui = compteurs().filter(x => x.donne || x.promis);
   return tete + `<p class="resume"><span><b>${esc(euro(tD))}</b> donnés en ${dons.length} don${dons.length > 1 ? 's' : ''}</span><span><b>${esc(euro(tP))}</b> promis par ${prom.length} personne${prom.length > 1 ? 's' : ''}</span></p>
-  ${dons.length ? `<h3 class="sec">Dons reçus · ${dons.length}</h3><div class="liste">${dons.map(c => ligne(c, 's-or', +c.donne || 0, [c.par ? 'via ' + c.par : '', c.moyen, jour(c.donneLe || c.maj)])).join('')}</div>` : ''}
+  ${dons.length ? `<h3 class="sec">Dons reçus · ${dons.length}</h3><div class="liste">${dons.map(c => ligne(c, 's-or', +c.donne || 0, [auteur(c) ? 'via ' + auteur(c) : '', c.moyen, jour(c.donneLe || c.maj)])).join('')}</div>` : ''}
   ${precise ? `<h3 class="sec">Par moyen de paiement</h3><p class="resume">${Object.entries(moyens).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span>${esc(k)} <b>${esc(euro(v))}</b></span>`).join('')}</p>` : ''}
-  ${prom.length ? `<h3 class="sec">Promesses en attente · ${prom.length}</h3><div class="liste">${prom.map(c => ligne(c, 's-violet', +c.promis || 0, [c.par ? 'via ' + c.par : '', c.lien ? 'lien envoyé' : 'lien à envoyer', 'promis ' + depuis(c.promisLe || c.maj || 0)])).join('')}</div>` : ''}
+  ${prom.length ? `<h3 class="sec">Promesses en attente · ${prom.length}</h3><div class="liste">${prom.map(c => ligne(c, 's-violet', +c.promis || 0, [auteur(c) ? 'via ' + auteur(c) : '', c.lien ? 'lien envoyé' : 'lien à envoyer', 'promis ' + depuis(c.promisLe || c.maj || 0)])).join('')}</div>` : ''}
   ${parQui.length ? `<h3 class="sec">Par appelant</h3><p class="resume">${parQui.map(x => `<span>${esc(x.nom || 'Sans prénom')} <b>${esc(euro(x.donne))}</b>${x.promis ? ' + ' + esc(euro(x.promis)) + ' promis' : ''}</span>`).join('')}</p>` : ''}
   <p class="aide">Touche un nom pour ouvrir sa fiche et corriger un montant.</p>`;
 }
