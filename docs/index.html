@@ -566,7 +566,7 @@ function basculerLocal() {
 /* Lecture toutes les 12 s (4 s après une écriture), écritures regroupées en un seul envoi */
 function creerApiSheet(url, code) {
   const docs = new Map(), subsC = new Set(), subsK = new Set();
-  let config = null, rev = '', file = [], minuterie = 0, prochain = 0, seq = 0, enVol = false, charge = false, echecs = 0, actif = false, lecture = false;
+  let config = null, rev = '', file = [], minuterie = 0, prochain = 0, seq = 0, enVol = false, charge = false, echecs = 0, actif = false, lecture = false, tDiff = 0;
   const meta = {fromCache: false, hasPendingWrites: false};
   const snapC = () => { const d = [...docs].map(([id, x]) => ({id, exists: true, data: () => x, metadata: meta})); return {docs: d, size: d.length, empty: !d.length, docChanges: () => [], metadata: meta}; };
   const snapK = () => ({id: 'main', exists: !!config, data: () => config || undefined, metadata: meta});
@@ -575,14 +575,14 @@ function creerApiSheet(url, code) {
   async function appel(post) {
     let r;
     try {
-      r = post ? await fetch(url, {method: 'POST', body: JSON.stringify({code, ops: post})})
+      r = post ? await fetch(url, {method: 'POST', body: JSON.stringify({code, qui: S.perso.prenom || '', pin: S.perso.pin || '', ops: post})})
         : await fetch(url + '?code=' + encodeURIComponent(code) + '&rev=' + encodeURIComponent(rev) + '&_=' + Date.now());
     } catch (e) { throw {code: 'unavailable', message: 'réseau'}; }
     let j = null;
     try { j = await r.json(); } catch (e) { throw {code: 'unavailable', message: 'réponse illisible'}; }
     if (!j || !j.ok) {
       const m = j && j.erreur;
-      throw {code: m === 'code' ? 'code' : m === 'code_court' ? 'code_court' : m === 'code_non_configure' ? 'code_non_configure' : m === 'occupe' ? 'unavailable' : 'invalid_argument', message: m || 'erreur'};
+      throw {code: m === 'code' ? 'code' : m === 'code_court' ? 'code_court' : m === 'code_non_configure' ? 'code_non_configure' : m === 'occupe' ? 'unavailable' : (m === 'pin' || m === 'inconnu' || m === 'bloque') ? 'pin' : 'invalid_argument', message: m || 'erreur'};
     }
     if (j.nouveauCode) setTimeout(() => toast(`Code d'équipe créé : « ${code} ». Donne-le aux appelants avec le lien du site.`), 300);
     return j;
@@ -602,7 +602,7 @@ function creerApiSheet(url, code) {
       /* Une écriture partie pendant la lecture : la réponse est peut-être déjà dépassée, on relit */
       if (s0 !== seq || enVol || file.length) { lecture = false; planifier(1500); return; }
       if (!j.inchange || !charge) {
-        if (!j.inchange) { docs.clear(); for (const c of j.contacts || []) if (c && c.id && c.data) docs.set(c.id, c.data); config = j.config || null; }
+        if (!j.inchange) { docs.clear(); for (const c of j.contacts || []) if (c && c.id && c.data) docs.set(c.id, c.data); config = j.config || null; S.serveur = {version: j.version || 1, membres: j.membres || []}; }
         rev = j.rev || ''; charge = true;
         diffuser();
       }
@@ -625,6 +625,8 @@ function creerApiSheet(url, code) {
     else if (op.op === 'update' && docs.has(op.id)) docs.set(op.id, {...docs.get(op.id), ...op.data});
     else if (op.op === 'delete') docs.delete(op.id);
     else if (op.op === 'config') config = op.data;
+    /* L'écran suit tout de suite (un import apparaît sans attendre la lecture suivante) */
+    if (charge) { clearTimeout(tDiff); tDiff = setTimeout(diffuser, 30); }
     return new Promise((res, rej) => {
       file.push({op, res, rej});
       clearTimeout(minuterie);
@@ -640,6 +642,7 @@ function creerApiSheet(url, code) {
       lot.forEach((x, i) => { const r = (j.resultats || [])[i]; if (r && r.ok) x.res(); else x.rej({code: 'invalid_argument', message: (r && r.erreur) || 'refus'}); });
     } catch (e) {
       lot.forEach(x => x.rej(e.code === 'code' ? {code: 'revoked', message: 'code'} : e));
+      if (e.code === 'pin') setTimeout(surPin, 0);
       if (e.code === 'code' || e.code === 'code_non_configure') { enVol = false; erreur(e); return; }
     }
     rev = '';   /* relecture complète : d'autres ont pu écrire entre-temps */
@@ -660,6 +663,13 @@ function creerApiSheet(url, code) {
   });
   return {
     parLots: true,
+    /* Créer, vérifier ou réinitialiser un code personnel : envoyé seul, tout de suite */
+    async compte(op) {
+      const j = await appel([op]);
+      const r = (j.resultats || [])[0] || {ok: false, erreur: 'requete'};
+      if (r.ok && op.op !== 'connexion') { rev = ''; planifier(300); }
+      return r;
+    },
     doc: ref,
     collection: () => ({
       doc: id => ref('contacts/' + id),
@@ -701,6 +711,8 @@ function echecEcriture(e, annuler) {
   if (refusDroit(e)) { basculerLocal(); return false; }
   annuler(); render();
   const c = e && e.code;
+  if (c === 'pin') return false;   // surPin s'en occupe
+  if (e && e.message === 'responsable') { toast('Seul le responsable de la campagne peut modifier ce réglage.'); return false; }
   toast(c === 'quota_exceeded' ? 'La liste partagée est pleine. Supprime des contacts pour en ajouter.'
     : c === 'revoked' ? "Ton accès à la liste partagée a été retiré."
     : c === 'invalid_argument' ? "Modification refusée. Le contact a peut-être été supprimé par quelqu'un d'autre."
@@ -756,6 +768,7 @@ const store = {
         } catch (e) {
           if (refusDroit(e)) { stop = true; return 'local'; }
           echecs++;
+          if (e && e.code === 'pin') stop = true;
           if (e && (e.code === 'quota_exceeded' || e.code === 'revoked')) stop = true;
         }
         progres(fait, items.length);
@@ -818,11 +831,11 @@ function render() {
     return;
   }
   /* Personne ne peut rien noter sans s'être présenté : prénom et nom obligatoires */
-  if (S.pret && !S.perso.prenom) {
+  if (S.pret && (!S.perso.prenom || (securise() && !S.perso.pin))) {
     renderTop(); $('#tabs').innerHTML = '';
     if (S.sheet) fermerSheet();
     /* La liste de l'équipe peut arriver après l'écran : on le redessine tant que rien n'a été tapé */
-    const vierge = !($('#i-prenom') && ($('#i-prenom').value || $('#i-nom').value));
+    const vierge = !['#i-prenom', '#i-nom', '#i-pin', '#i-pin2'].some(q => $(q) && $(q).value);
     if (S.vueRendue !== 'identite' || (vierge && S.identiteN !== equipe().length)) {
       S.vueRendue = 'identite'; S.identiteN = equipe().length;
       $('#main').innerHTML = tplIdentite(); const f = $('#i-prenom'); if (f) f.focus();
@@ -904,7 +917,53 @@ function tplLigne(c, entete) {
     ${sub.length ? `<span class="lig-sub">${esc(sub.join(' · '))}</span>` : ''}
   </button>`;
 }
+/* Protection des noms active : script Google à jour et liste partagée par Google Sheets */
+const securise = () => S.mode === 'shared' && S.parSheet && !!S.serveur && S.serveur.version >= 2;
+const aCodePerso = nom => !!(S.serveur && (S.serveur.membres || []).some(n => plain(n) === plain(nom)));
+const pinValide = v => /^\d{4,8}$/.test(String(v || ''));
+function surPin() {
+  if (!S.perso.pin) return;
+  sauverPerso({pin: ''});
+  toast("Ton code personnel n'est plus valable : reconnecte-toi.");
+  S.vueRendue = ''; render();
+}
+const MSG_COMPTE = {pin: 'Code personnel incorrect.', bloque: "Trop d'essais : réessaie dans 15 minutes.", existe: "Ce nom a déjà un code personnel : choisis-le dans « Déjà dans l'équipe » et entre ton code.", pin_format: 'Le code personnel doit faire 4 à 8 chiffres.', nom: 'Entre ton prénom et ton nom.'};
+async function seConnecter(nom, pin, nouveau) {
+  if (!pinValide(pin)) { toast(MSG_COMPTE.pin_format); return; }
+  if (nouveau && aCodePerso(nom)) { toast(MSG_COMPTE.existe); return; }
+  let r;
+  try { r = await db.compte({op: !nouveau && aCodePerso(nom) ? 'connexion' : 'inscrire', nom, pin}); }
+  catch (e) { toast("Pas de réponse du script Google. Vérifie ta connexion et réessaie."); return; }
+  if (!r.ok) { toast(MSG_COMPTE[r.erreur] || "Connexion refusée. Réessaie."); return; }
+  nom = r.nom || nom;
+  sauverPerso({prenom: nom, pin: String(pin)});
+  if (S.serveur && !aCodePerso(nom)) S.serveur.membres = [...(S.serveur.membres || []), nom];
+  inscrire(nom);
+  S.vueRendue = ''; render();
+  toast('Bienvenue ' + nom.split(' ')[0] + ' !');
+}
 function tplIdentite() {
+  if (securise()) {
+    const noms = equipe(), deja = S.perso.prenom;
+    const pinChamp = id => `<input id="${id}" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" required>`;
+    return `${deja ? `<div class="info"><span>Pour protéger les noms, chaque membre a maintenant un code personnel. Entre le tien, ou choisis-en un si c'est la première fois.</span></div>` : ''}
+    ${deja ? '' : `<section class="bloc"><h2>Nouveau dans l'équipe</h2>
+      <p class="aide">Ton nom s'affiche à côté de chaque appel que tu notes. Ton code personnel empêche quelqu'un d'autre de noter des appels à ta place.</p>
+      <form id="f-identite" class="liste-champs" autocomplete="on">
+        <label class="champ"><span>Prénom</span><input id="i-prenom" type="text" autocomplete="given-name" autocapitalize="words" required></label>
+        <label class="champ"><span>Nom</span><input id="i-nom" type="text" autocomplete="family-name" autocapitalize="words" required></label>
+        <label class="champ"><span>Choisis ton code personnel (4 à 8 chiffres)</span>${pinChamp('i-pin')}</label>
+        <p class="aide">Retiens-le : il te sera demandé sur chaque nouveau téléphone.</p>
+        <button type="submit" class="btn primary">Commencer</button>
+      </form>
+    </section>`}
+    ${noms.length ? `<section class="bloc"><h2>${deja ? 'Confirme ton identité' : "Déjà dans l'équipe ?"}</h2>
+      <label class="champ"><span>Ton nom</span><select id="i-existant"><option value="">Choisir ton nom…</option>${noms.map(n => `<option value="${esc(n)}" ${deja && plain(n) === plain(deja) ? 'selected' : ''}>${esc(n)}${aCodePerso(n) ? '' : ' (pas encore de code)'}</option>`).join('')}</select></label>
+      <label class="champ"><span>Ton code personnel (si ton nom n'en a pas encore, choisis-en un)</span>${pinChamp('i-pin2')}</label>
+      <div class="row"><button type="button" class="btn primary grow" data-a="identite-existant">Me connecter</button>${deja ? `<button type="button" class="btn grow" data-a="pas-moi">Ce n'est pas moi</button>` : ''}</div>
+    </section>` : ''}`;
+  }
+
   const noms = equipe();
   return `<section class="bloc"><h2>Qui es-tu ?</h2>
     <p class="aide">Ton nom s'affiche à côté de chaque appel que tu notes, pour que l'équipe sache qui a appelé qui. Il est retenu sur ce téléphone.</p>
@@ -1013,16 +1072,18 @@ function tplEquipe() {
     return `<div class="eq">
       <span class="avatar ${x.donne ? 's-or' : 's-neutre'}" aria-hidden="true">${esc(initiales(x.nom))}</span>
       <div class="eq-id"><strong>${esc(x.nom)}${estMoi ? ' (toi)' : ''}</strong>
-        <span>${x.appels} appel${x.appels > 1 ? 's' : ''} · ${x.dons} don${x.dons > 1 ? 's' : ''} · ${x.promesses} promesse${x.promesses > 1 ? 's' : ''}${x.restants ? ' · ' + x.restants + ' à appeler' : ''}</span>
+        <span>${x.appels} appel${x.appels > 1 ? 's' : ''} · ${x.dons} don${x.dons > 1 ? 's' : ''} · ${x.promesses} promesse${x.promesses > 1 ? 's' : ''}${x.restants ? ' · ' + x.restants + ' à appeler' : ''}${securise() && !aCodePerso(x.nom) ? ' · pas encore de code personnel' : ''}</span>
         <div class="bar mini"><i class="b-donne" style="width:${x.donne / max * 100}%"></i><i class="b-promis" style="width:${x.promis / max * 100}%"></i></div></div>
       <div class="eq-m"><strong>${esc(euro(x.donne))}</strong>${x.promis ? `<span>+ ${esc(euro(x.promis))} promis</span>` : ''}</div>
-      <div class="eq-act">${
+      <div class="eq-act">${securise() && !peutGererCampagne() ? '' :
         plain(S.eqRetirer) === plain(x.nom)
           ? `<button type="button" class="btn small danger" data-a="eq-retirer-ok">Confirmer le retrait</button><button type="button" class="btn small" data-a="eq-retirer-non">Annuler</button>`
-          : `<button type="button" class="btn small" data-a="eq-retirer" data-n="${esc(x.nom)}">Retirer</button>`}</div>
+          : `${estMoi ? '' : `<button type="button" class="btn small" data-a="eq-retirer" data-n="${esc(x.nom)}">Retirer</button>`}${securise() && aCodePerso(x.nom) && !estMoi ? `<button type="button" class="btn small" data-a="eq-reset" data-n="${esc(x.nom)}">Nouveau code personnel</button>` : ''}`}</div>
     </div>`;
   };
-  return `<section class="bloc"><h2>Équipe d'appel</h2>
+  const vieux = S.parSheet && S.serveur && S.serveur.version < 2;
+  return `${vieux ? `<div class="info alerte"><span>Les noms ne sont pas encore protégés : le script Google doit être mis à jour (nouveau code collé, puis Gérer les déploiements → Nouvelle version).</span></div>` : ''}
+  <section class="bloc"><h2>Équipe d'appel</h2>
     <p class="aide">Chaque appelant rejoint l'équipe en entrant son prénom et son nom à sa première visite. Tu peux aussi ajouter quelqu'un à l'avance, pour lui attribuer des contacts.</p>
     <div class="row"><label class="champ grow"><span class="sr">Prénom à ajouter</span><input id="e-nom" data-f type="text" autocomplete="off" placeholder="Prénom à ajouter"></label><button type="button" class="btn primary" data-a="eq-ajouter">Ajouter</button></div>
   </section>
@@ -1529,14 +1590,28 @@ const ACTIONS = {
     await inscrire(nom);
     render(); toast('Sur cet appareil, tu es ' + nom);
   },
-  'identite-existant': () => { const v = $('#i-existant') && $('#i-existant').value; if (!v) { toast('Choisis ton nom dans la liste.'); return; } devenir(v); },
+  'identite-existant': () => {
+    const v = $('#i-existant') && $('#i-existant').value;
+    if (!v) { toast('Choisis ton nom dans la liste.'); return; }
+    if (securise()) { seConnecter(v, $('#i-pin2').value.trim(), false); return; }
+    devenir(v);
+  },
   'devenir-resp': async () => {
     if (String(S.config.responsable || '').trim()) { construireVue(); return; }
     const ok = await store.sauverConfig({responsable: S.perso.prenom});
     if (ok) { S.formSale = false; construireVue(); toast('Tu es responsable de la campagne'); }
   },
-  'pas-moi': () => { sauverPerso({prenom: '', mes: false}); S.vueRendue = ''; render(); },
+  'pas-moi': () => { sauverPerso({prenom: '', pin: '', mes: false}); S.vueRendue = ''; render(); },
   'eq-retirer': el => { S.eqRetirer = el.dataset.n; S.formSale = false; construireVue(); },
+  'eq-reset': async el => {
+    const nom = el.dataset.n;
+    let r;
+    try { r = await db.compte({op: 'reinitialiser', nom}); } catch (e) { toast("Pas de réponse du script Google. Réessaie."); return; }
+    if (!r.ok) { toast(r.erreur === 'responsable' ? 'Seul le responsable de la campagne peut faire ça.' : 'Réinitialisation refusée.'); return; }
+    if (S.serveur) S.serveur.membres = (S.serveur.membres || []).filter(n => plain(n) !== plain(nom));
+    construireVue();
+    toast(nom + ' choisira un nouveau code personnel à sa prochaine connexion.');
+  },
   'eq-retirer-non': () => { S.eqRetirer = ''; construireVue(); },
   'eq-retirer-ok': async () => {
     const nom = S.eqRetirer; S.eqRetirer = '';
@@ -1546,7 +1621,8 @@ const ACTIONS = {
     S.formSale = true;
     const ok = await store.sauverConfig({equipe: reste});
     const r = ok && cibles.length ? await store.lot(cibles.map(c => ({id: c.id, creer: false, data: {pour: ''}})), () => {}) : {fait: 0, echecs: 0};
-    if (ok && plain(nom) === moi()) sauverPerso({prenom: '', mes: false});
+    if (ok && securise() && aCodePerso(nom)) { try { await db.compte({op: 'reinitialiser', nom}); } catch (e) {} if (S.serveur) S.serveur.membres = (S.serveur.membres || []).filter(n => plain(n) !== plain(nom)); }
+    if (ok && plain(nom) === moi()) sauverPerso({prenom: '', pin: '', mes: false});
     S.formSale = false; render();
     if (ok) toast(r.echecs ? `${nom} retiré, mais ${r.echecs} contacts lui restent attribués. Réessaie.` : `${nom} retiré de l'équipe${cibles.length ? ', ' + cibles.length + ' contact' + (cibles.length > 1 ? 's' : '') + ' libéré' + (cibles.length > 1 ? 's' : '') : ''}`);
   },
@@ -1635,7 +1711,7 @@ const ACTIONS = {
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el || el.disabled) return;
-  if (S.pret && !S.perso.prenom && S.mode !== 'code' && el.dataset.a !== 'identite-existant') { render(); return; }
+  if (S.pret && (!S.perso.prenom || (securise() && !S.perso.pin)) && S.mode !== 'code' && el.dataset.a !== 'identite-existant' && el.dataset.a !== 'pas-moi') { render(); return; }
   const f = ACTIONS[el.dataset.a];
   if (f) f(el);
 });
@@ -1644,6 +1720,7 @@ document.addEventListener('submit', e => {
     e.preventDefault();
     const prenom = majuscule($('#i-prenom').value), nom = majuscule($('#i-nom').value);
     if (!prenom || !nom) { toast('Entre ton prénom et ton nom.'); return; }
+    if (securise()) { seConnecter(prenom + ' ' + nom, $('#i-pin').value.trim(), true); return; }
     devenir(prenom + ' ' + nom);
     return;
   }

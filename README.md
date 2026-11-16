@@ -21,6 +21,8 @@ Outil d'appels pour la campagne de dons Shoresh 2026 : liste de contacts commune
 
 Le premier code d'équipe entré sur le site devient le code de l'équipe. Le tableur « Appels Shoresh 2026 (liste) » est créé dans ton Google Drive au même moment. Pour changer le code : dans le script, **Paramètres du projet → Propriétés du script → code**.
 
+Chaque membre choisit un **code personnel** (4 à 8 chiffres) à sa première connexion. Le script refuse toute modification faite au nom de quelqu'un sans son code, inscrit lui-même le vrai auteur de chaque appel, et bloque un nom 15 minutes après 5 codes faux. Seul le responsable de la campagne modifie l'objectif et le lien de don, et peut donner un nouveau code personnel à un membre (onglet Équipe). Code personnel du responsable oublié : dans le script, **Paramètres du projet → Propriétés du script**, supprime la ligne `membre:prénom nom`.
+
 Si tu modifies le script plus tard : **Déployer → Gérer les déploiements → Modifier (crayon) → Version : Nouvelle version**. L'URL ne change pas.
 
 ### 2. Le site sur GitHub Pages
